@@ -5,11 +5,11 @@ import (
 	"os"
 	"path"
 
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 	_ "github.com/lib/pq"
 )
 
 // LibraryAppDB represents the database connection.
+// Implements the LibraryAppDB interface.
 type LibraryAppDB struct {
 	db *sql.DB
 }
@@ -88,29 +88,4 @@ func getSQLFileContent(file string) (string, error) {
 		return "", err
 	}
 	return string(b), nil
-}
-
-func (l *LibraryAppDB) GetAllUsers() ([]*libraryapp.User, error) {
-	rows, err := l.db.Query("SELECT id, username, password, created_at, updated_at, deleted_at FROM \"user\";")
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	var users []*libraryapp.User
-	for rows.Next() {
-		var u libraryapp.User
-		err := rows.Scan(&u.ID, &u.Username, &u.Password, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
-		if err != nil {
-			return nil, err
-		}
-		users = append(users, &u)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return users, nil
 }
