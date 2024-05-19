@@ -13,9 +13,9 @@ type Loan struct {
 	StaffID      int
 	LoanDate     time.Time
 	DueDate      time.Time
-	ReturnedDate time.Time
+	ReturnedDate *time.Time
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt time.Time
+	DeletedAt *time.Time
 }

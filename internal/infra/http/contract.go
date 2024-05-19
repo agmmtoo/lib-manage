@@ -9,6 +9,7 @@ import (
 type Servicer interface {
 	ListUsers(ctx context.Context, input ListUserRequest) (*ListUserResponse, error)
 	GetUserByID(ctx context.Context, id int) (*User, error)
+	CreateUser(ctx context.Context, input CreateUserRequest) (*User, error)
 
 	ListBooks(ctx context.Context, input ListBookRequest) (*ListBookResponse, error)
 	GetBookByID(ctx context.Context, id int) (*Book, error)
@@ -34,12 +35,17 @@ type ListUserRequest struct {
 type ListUserResponse = ListResponse[User]
 
 type User struct {
-	ID        int       `json:"id"`
-	Username  string    `json:"username"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	DeletedAt time.Time `json:"deleted_at,omitempty"`
+	ID        int        `json:"id"`
+	Username  string     `json:"username"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	// Password string `json:"password"`
+}
+
+type CreateUserRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type ListBookRequest struct {
@@ -53,10 +59,10 @@ type ListBookRequest struct {
 type ListBookResponse = ListResponse[Book]
 
 type Book struct {
-	ID        int       `json:"id"`
-	Title     string    `json:"title"`
-	Author    string    `json:"author"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	DeletedAt time.Time `json:"deleted_at,omitempty"`
+	ID        int        `json:"id"`
+	Title     string     `json:"title"`
+	Author    string     `json:"author"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }

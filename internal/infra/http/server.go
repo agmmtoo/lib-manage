@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 )
 
@@ -33,28 +32,4 @@ func (s *Server) Start() error {
 
 func (s *Server) Stop() error {
 	return s.httpServer.Shutdown(context.TODO())
-}
-
-func (s *Server) registerRoutes(
-	service Servicer,
-) *http.ServeMux {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-			return
-		}
-
-		users, err := service.ListUsers(r.Context(), ListUserRequest{})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Write the users to the response.
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(users)
-	})
-
-	return mux
 }

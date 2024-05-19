@@ -2,6 +2,7 @@ package psql
 
 import (
 	"context"
+	"strings"
 
 	"github.com/agmmtoo/lib-manage/internal/core/user"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
@@ -31,7 +32,9 @@ func (l *LibraryAppDB) ListUsers(ctx context.Context, input user.ListRequest) (*
 		return nil, err
 	}
 
-	return nil, nil
+	return &user.ListResponse{
+		Users: users,
+	}, nil
 }
 
 func (l *LibraryAppDB) GetUserByID(ctx context.Context, id int) (*libraryapp.User, error) {
@@ -43,6 +46,27 @@ func (l *LibraryAppDB) GetUserByID(ctx context.Context, id int) (*libraryapp.Use
 	var u libraryapp.User
 	err := row.Scan(&u.ID, &u.Username, &u.Password, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
 	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
+}
+
+func (l *LibraryAppDB) CreateUser(ctx context.Context, input user.CreateRequest) (*libraryapp.User, error) {
+	q := "INSERT INTO \"user\" (username, password) VALUES ($1, $2) RETURNING id, username, password, created_at, updated_at, deleted_at;"
+	args := []interface{}{input.Username, input.Password}
+
+	row := l.db.QueryRowContext(ctx, q, args...)
+
+	var u libraryapp.User
+	err := row.Scan(&u.ID, &u.Username, &u.Password, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
+	if err != nil {
+		if strings.Contains(err.Error(), "user_username_key") {
+			return nil, libraryapp.CoreError{
+				Code:   libraryapp.ECONFLICT,
+				Reason: "username already exists",
+			}
+		}
 		return nil, err
 	}
 

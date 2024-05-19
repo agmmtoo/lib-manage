@@ -31,12 +31,14 @@ func (l *LibraryAppDB) ListBooks(ctx context.Context, input book.ListRequest) (*
 		return nil, err
 	}
 
-	return nil, nil
+	return &book.ListResponse{
+		Books: books,
+	}, nil
 }
 
 func (l *LibraryAppDB) GetBookByID(ctx context.Context, id int) (*libraryapp.Book, error) {
 	q := "SELECT id, title, author, created_at, updated_at, deleted_at FROM book WHERE id = $1;"
-	args := []interface{}{id}
+	args := []any{id}
 
 	row := l.db.QueryRowContext(ctx, q, args...)
 

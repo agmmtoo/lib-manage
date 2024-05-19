@@ -46,6 +46,10 @@ func (s *Service) GetUserByID(ctx context.Context, id int) (*http.User, error) {
 	return s.user.GetByID(ctx, id)
 }
 
+func (s *Service) CreateUser(ctx context.Context, input http.CreateUserRequest) (*http.User, error) {
+	return s.user.Create(ctx, input)
+}
+
 func (s *Service) ListBooks(ctx context.Context, input http.ListBookRequest) (*http.ListBookResponse, error) {
 	return s.book.List(ctx, input)
 }
