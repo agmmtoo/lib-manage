@@ -7,9 +7,11 @@ import (
 	"github.com/agmmtoo/lib-manage/internal/core/library"
 	"github.com/agmmtoo/lib-manage/internal/core/loan"
 	"github.com/agmmtoo/lib-manage/internal/core/user"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
+	"github.com/agmmtoo/lib-manage/internal/infra/http"
 )
 
+// Service implements http Service interface
+// Service delegates the calls to underlying services
 type Service struct {
 	user    *user.Service
 	book    *book.Service
@@ -31,19 +33,24 @@ func New(
 	}
 }
 
-func (s *Service) ListUsers(ctx context.Context, input user.ListRequest) (*user.ListResponse, error) {
+func (s *Service) Ping(ctx context.Context) (string, error) {
+	// TODO: delegate to the database
+	return "Pong!", nil
+}
+
+func (s *Service) ListUsers(ctx context.Context, input http.ListUserRequest) (*http.ListUserResponse, error) {
 	return s.user.List(ctx, input)
 }
 
-func (s *Service) GetUserByID(ctx context.Context, id int) (*libraryapp.User, error) {
+func (s *Service) GetUserByID(ctx context.Context, id int) (*http.User, error) {
 	return s.user.GetByID(ctx, id)
 }
 
-func (s *Service) ListBooks(ctx context.Context, input book.ListRequest) (*book.ListResponse, error) {
+func (s *Service) ListBooks(ctx context.Context, input http.ListBookRequest) (*http.ListBookResponse, error) {
 	return s.book.List(ctx, input)
 }
 
-func (s *Service) GetBookByID(ctx context.Context, id int) (*libraryapp.Book, error) {
+func (s *Service) GetBookByID(ctx context.Context, id int) (*http.Book, error) {
 	return s.book.GetByID(ctx, id)
 }
 

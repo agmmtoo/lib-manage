@@ -1,6 +1,7 @@
 package psql
 
 import (
+	"context"
 	"database/sql"
 	"os"
 	"path"
@@ -9,7 +10,7 @@ import (
 )
 
 // LibraryAppDB represents the database connection.
-// Implements the LibraryAppDB interface.
+// Implements the core Storer interfaces.
 type LibraryAppDB struct {
 	db *sql.DB
 }
@@ -41,6 +42,10 @@ func NewLibraryAppDB(dataSourceName string) (*LibraryAppDB, error) {
 // Close closes the database connection.
 func (l *LibraryAppDB) Close() error {
 	return l.db.Close()
+}
+
+func (l *LibraryAppDB) Ping(ctx context.Context) error {
+	return l.db.PingContext(ctx)
 }
 
 // Migrate creates the tables in the database.
