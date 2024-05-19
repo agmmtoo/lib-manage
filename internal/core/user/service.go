@@ -17,7 +17,7 @@ func New(repo Storer) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) List(ctx context.Context, input http.ListUserRequest) (*http.ListUserResponse, error) {
+func (s *Service) List(ctx context.Context, input http.ListUsersRequest) (*http.ListUsersResponse, error) {
 	result, err := s.repo.ListUsers(ctx, ListRequest{
 		IDs:      input.IDs,
 		Name:     input.Name,
@@ -41,7 +41,7 @@ func (s *Service) List(ctx context.Context, input http.ListUserRequest) (*http.L
 		})
 	}
 
-	return &http.ListUserResponse{
+	return &http.ListUsersResponse{
 		Data:  users,
 		Total: result.Total,
 	}, nil

@@ -15,7 +15,7 @@ func New(repo Storer) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) List(ctx context.Context, input http.ListBookRequest) (*http.ListBookResponse, error) {
+func (s *Service) List(ctx context.Context, input http.ListBooksRequest) (*http.ListBooksResponse, error) {
 	result, err := s.repo.ListBooks(ctx, ListRequest{
 		IDs:    input.IDs,
 		Title:  input.Title,
@@ -39,7 +39,7 @@ func (s *Service) List(ctx context.Context, input http.ListBookRequest) (*http.L
 		})
 	}
 
-	return &http.ListBookResponse{
+	return &http.ListBooksResponse{
 		Data:  books,
 		Total: result.Total,
 	}, nil
@@ -60,9 +60,28 @@ func (s *Service) GetByID(ctx context.Context, id int) (*http.Book, error) {
 	}, nil
 }
 
+func (s *Service) Create(ctx context.Context, input http.CreateBookRequest) (*http.Book, error) {
+	result, err := s.repo.CreateBook(ctx, CreateRequest{
+		Title:  input.Title,
+		Arthor: input.Author,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &http.Book{
+		ID:        result.ID,
+		Title:     result.Title,
+		Author:    result.Author,
+		CreatedAt: result.CreatedAt,
+		UpdatedAt: result.UpdatedAt,
+		DeletedAt: result.DeletedAt,
+	}, nil
+}
+
 type Storer interface {
 	ListBooks(ctx context.Context, input ListRequest) (*ListResponse, error)
 	GetBookByID(ctx context.Context, id int) (*libraryapp.Book, error)
+	CreateBook(ctx context.Context, input CreateRequest) (*libraryapp.Book, error)
 }
 
 type ListRequest struct {
@@ -76,4 +95,9 @@ type ListRequest struct {
 type ListResponse struct {
 	Books []*libraryapp.Book
 	Total int
+}
+
+type CreateRequest struct {
+	Title  string
+	Arthor string
 }

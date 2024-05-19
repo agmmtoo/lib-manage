@@ -20,7 +20,7 @@ func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*
 	var loans []*libraryapp.Loan
 	for rows.Next() {
 		var l libraryapp.Loan
-		err := rows.Scan(&l.ID, &l.UserID, &l.BookID, &l.CreatedAt, &l.UpdatedAt, &l.DeletedAt)
+		err := rows.Scan(&l.ID, &l.BookID, &l.UserID, &l.LibraryID, &l.StaffID, &l.LoanDate, &l.DueDate, &l.ReturnDate, &l.CreatedAt, &l.UpdatedAt, &l.DeletedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -31,7 +31,9 @@ func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*
 		return nil, err
 	}
 
-	return nil, nil
+	return &loan.ListResponse{
+		Loans: loans,
+	}, nil
 }
 
 func (l *LibraryAppDB) GetLoanByID(ctx context.Context, id int) (*libraryapp.Loan, error) {
@@ -42,6 +44,22 @@ func (l *LibraryAppDB) GetLoanByID(ctx context.Context, id int) (*libraryapp.Loa
 
 	var lo libraryapp.Loan
 	err := row.Scan(&lo.ID, &lo.UserID, &lo.BookID, &lo.CreatedAt, &lo.UpdatedAt, &lo.DeletedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &lo, nil
+}
+
+func (l *LibraryAppDB) CreateLoan(ctx context.Context, input loan.CreateRequest) (*libraryapp.Loan, error) {
+	q := "INSERT INTO loan (user_id, book_id, library_id, staff_id, loan_date, due_date, return_date) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, user_id, book_id, library_id, staff_id, loan_date, due_date, return_date, created_at, updated_at, deleted_at;"
+	args := []any{input.UserID, input.BookID, input.LibraryID, input.StaffID, input.LoanDate, input.DueDate, input.ReturnDate}
+
+	row := l.db.QueryRowContext(ctx, q, args...)
+
+	var lo libraryapp.Loan
+	err := row.Scan(&lo.ID, &lo.UserID, &lo.BookID, &lo.LibraryID, &lo.StaffID, &lo.LoanDate, &lo.DueDate, &lo.ReturnDate, &lo.CreatedAt, &lo.UpdatedAt, &lo.DeletedAt)
+
 	if err != nil {
 		return nil, err
 	}

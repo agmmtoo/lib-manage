@@ -64,6 +64,10 @@ func MakeHandler(h APIFunc) http.HandlerFunc {
 	}
 }
 
+func ResourceNotFound(resource string) APIError {
+	return NewAPIError(http.StatusNotFound, fmt.Errorf("%s not found", resource))
+}
+
 func writeJSON(w http.ResponseWriter, statusCode int, data any) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)

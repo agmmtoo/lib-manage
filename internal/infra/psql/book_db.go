@@ -50,3 +50,17 @@ func (l *LibraryAppDB) GetBookByID(ctx context.Context, id int) (*libraryapp.Boo
 
 	return &b, nil
 }
+
+func (l *LibraryAppDB) CreateBook(ctx context.Context, input book.CreateRequest) (*libraryapp.Book, error) {
+	q := "INSERT INTO book (title, arthor) VALUES ($1, $2) returning id, title, author, created_at, updated_at, deleted_at;"
+	args := []any{input.Title, input.Arthor}
+
+	row := l.db.QueryRowContext(ctx, q, args...)
+
+	var b libraryapp.Book
+	err := row.Scan(&b.ID, &b.Title, &b.Author, &b.CreatedAt, &b.UpdatedAt, &b.DeletedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &b, nil
+}

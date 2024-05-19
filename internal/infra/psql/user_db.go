@@ -46,6 +46,12 @@ func (l *LibraryAppDB) GetUserByID(ctx context.Context, id int) (*libraryapp.Use
 	var u libraryapp.User
 	err := row.Scan(&u.ID, &u.Username, &u.Password, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			return nil, libraryapp.CoreError{
+				Code:   libraryapp.ENOTFOUND,
+				Reason: "user not found",
+			}
+		}
 		return nil, err
 	}
 
