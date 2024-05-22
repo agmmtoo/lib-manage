@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
@@ -45,18 +46,40 @@ type APIFunc func(w http.ResponseWriter, r *http.Request) error
 func MakeHandler(h APIFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := h(w, r); err != nil {
-			var apiErr APIError
-			var coreErr libraryapp.CoreError
-			if errors.As(err, &apiErr) {
-				writeJSON(w, apiErr.StatusCode, apiErr)
-			} else if errors.As(err, &coreErr) {
-				e := NewAPIError(coreErr.Code, coreErr)
-				writeJSON(w, e.StatusCode, e)
+			var coreErr *libraryapp.CoreError
+			if errors.As(err, &coreErr); coreErr != nil {
+				statusCode := http.StatusBadRequest
+				switch coreErr.Code {
+
+				case libraryapp.ErrCodeDBNotFound:
+					statusCode = http.StatusNotFound
+
+				case libraryapp.ErrCodeDBScan,
+					libraryapp.ErrCodeDBExec,
+					libraryapp.ErrCodeDBDuplicate,
+					libraryapp.ErrCodeDBQuery:
+					statusCode = http.StatusBadRequest
+				}
+
+				errResp := map[string]any{
+					"code":    coreErr.Code,
+					"message": coreErr.Reason,
+				}
+				log.Println(errors.Unwrap(err))
+				writeJSON(w, statusCode, errResp)
+			} else if apiErr, ok := err.(APIError); ok {
+				errResp := map[string]any{
+					"code":    "ERR_API",
+					"message": apiErr.Message,
+				}
+				log.Println(apiErr)
+				writeJSON(w, apiErr.StatusCode, errResp)
 			} else {
 				errResp := map[string]any{
-					"status_code": http.StatusInternalServerError,
-					"message":     err.Error(),
+					"code":    libraryapp.ErrCodeInternal,
+					"message": err.Error(),
 				}
+				log.Println("hi", err)
 				writeJSON(w, http.StatusInternalServerError, errResp)
 			}
 			// slog.Error("HTTP API error", "err", err.Error(), "path", r.URL.Path)

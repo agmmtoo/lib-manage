@@ -2,6 +2,7 @@ package psql
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/agmmtoo/lib-manage/internal/core/loan"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
@@ -9,10 +10,10 @@ import (
 
 func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*loan.ListResponse, error) {
 	q := "SELECT id, user_id, book_id, created_at, updated_at, deleted_at FROM loan;"
-	args := []interface{}{}
+	args := []any{}
 	rows, err := l.db.QueryContext(ctx, q, args...)
 	if err != nil {
-		return nil, err
+		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing loans", err)
 	}
 
 	defer rows.Close()
@@ -22,13 +23,13 @@ func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*
 		var l libraryapp.Loan
 		err := rows.Scan(&l.ID, &l.BookID, &l.UserID, &l.LibraryID, &l.StaffID, &l.LoanDate, &l.DueDate, &l.ReturnDate, &l.CreatedAt, &l.UpdatedAt, &l.DeletedAt)
 		if err != nil {
-			return nil, err
+			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning loan", err)
 		}
 		loans = append(loans, &l)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing loans", err)
 	}
 
 	return &loan.ListResponse{
@@ -38,14 +39,17 @@ func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*
 
 func (l *LibraryAppDB) GetLoanByID(ctx context.Context, id int) (*libraryapp.Loan, error) {
 	q := "SELECT id, user_id, book_id, created_at, updated_at, deleted_at FROM loan WHERE id = $1;"
-	args := []interface{}{id}
+	args := []any{id}
 
 	row := l.db.QueryRowContext(ctx, q, args...)
 
 	var lo libraryapp.Loan
 	err := row.Scan(&lo.ID, &lo.UserID, &lo.BookID, &lo.CreatedAt, &lo.UpdatedAt, &lo.DeletedAt)
 	if err != nil {
-		return nil, err
+		if err == sql.ErrNoRows {
+			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "loan not found", err)
+		}
+		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error getting loan", err)
 	}
 
 	return &lo, nil
@@ -61,7 +65,7 @@ func (l *LibraryAppDB) CreateLoan(ctx context.Context, input loan.CreateRequest)
 	err := row.Scan(&lo.ID, &lo.UserID, &lo.BookID, &lo.LibraryID, &lo.StaffID, &lo.LoanDate, &lo.DueDate, &lo.ReturnDate, &lo.CreatedAt, &lo.UpdatedAt, &lo.DeletedAt)
 
 	if err != nil {
-		return nil, err
+		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating loan", err)
 	}
 
 	return &lo, nil
