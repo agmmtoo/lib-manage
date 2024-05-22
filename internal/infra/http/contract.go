@@ -18,6 +18,9 @@ type Servicer interface {
 	ListLibraries(ctx context.Context, input ListLibrariesRequest) (*ListLibrariesResponse, error)
 	GetLibraryByID(ctx context.Context, id int) (*Library, error)
 	CreateLibrary(ctx context.Context, input CreateLibraryRequest) (*Library, error)
+	AssignLibraryStaff(ctx context.Context, input AssignLibraryStaffRequest) (*LibraryStaff, error)
+	RegisterLibraryBook(ctx context.Context, input RegisterLibraryBookRequest) (*LibraryBook, error)
+	RegisterLibraryBookBatch(ctx context.Context, input RegisterLibraryBookBatchRequest) (*RegisterLibraryBookBatchResponse, error)
 
 	ListLoans(ctx context.Context, input ListLoansRequest) (*ListLoansResponse, error)
 	GetLoanByID(ctx context.Context, id int) (*Loan, error)
@@ -157,4 +160,34 @@ type ListStaffsResponse = ListResponse[Staff]
 
 type CreateStaffRequest struct {
 	UserID int `json:"user_id"`
+}
+
+type AssignLibraryStaffRequest struct {
+	LibraryID int `json:"-"`
+	StaffID   int `json:"staff_id"`
+}
+
+type LibraryStaff struct {
+	LibraryID int `json:"library_id"`
+	StaffID   int `json:"staff_id"`
+}
+
+type RegisterLibraryBookRequest struct {
+	LibraryID int `json:"-"`
+	BookIDs   int `json:"book_id"`
+}
+type RegisterLibraryBookBatchRequest struct {
+	LibraryID      int   `json:"-"`
+	BookIDs        []int `json:"book_ids"`
+	SkipDuplicates bool  `json:"skip_duplicates"`
+}
+
+type LibraryBook struct {
+	LibraryID int `json:"library_id"`
+	BookID    int `json:"book_id"`
+}
+
+type RegisterLibraryBookBatchResponse struct {
+	LibraryID      int   `json:"-"`
+	SuccessBookIDs []int `json:"success_book_ids"`
 }

@@ -51,3 +51,27 @@ func (h *LibraryAppHandler) CreateLibrary(w http.ResponseWriter, r *http.Request
 
 	return writeJSON(w, http.StatusCreated, library)
 }
+
+func (h *LibraryAppHandler) AssignLibraryStaff(w http.ResponseWriter, r *http.Request) error {
+	var req AssignLibraryStaffRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return InvalidJSON()
+	}
+	defer r.Body.Close()
+
+	pathID := r.PathValue("id")
+	libraryID, err := strconv.Atoi(pathID)
+	if err != nil {
+		return NewAPIError(http.StatusNotFound, ResourceNotFound("library"))
+	}
+
+	res, err := h.service.AssignLibraryStaff(r.Context(), AssignLibraryStaffRequest{
+		LibraryID: libraryID,
+		StaffID:   req.StaffID,
+	})
+	if err != nil {
+		return err
+	}
+
+	return writeJSON(w, http.StatusCreated, res)
+}
