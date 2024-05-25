@@ -37,7 +37,8 @@ func InvalidRequestData(errors map[string]string) APIError {
 	}
 }
 
-func InvalidJSON() APIError {
+func InvalidJSON(err error) APIError {
+	log.Println(err)
 	return NewAPIError(http.StatusBadRequest, fmt.Errorf("invalid JSON request data"))
 }
 

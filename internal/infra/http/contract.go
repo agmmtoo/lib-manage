@@ -174,7 +174,7 @@ type LibraryStaff struct {
 
 type RegisterLibraryBookRequest struct {
 	LibraryID int `json:"-"`
-	BookIDs   int `json:"book_id"`
+	BookID    int `json:"book_id"`
 }
 type RegisterLibraryBookBatchRequest struct {
 	LibraryID      int   `json:"-"`

@@ -33,7 +33,7 @@ func (h *LibraryAppHandler) GetBookByID(w http.ResponseWriter, r *http.Request) 
 func (h *LibraryAppHandler) CreateBook(w http.ResponseWriter, r *http.Request) error {
 	var req CreateBookRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return InvalidJSON()
+		return InvalidJSON(err)
 	}
 	defer r.Body.Close()
 

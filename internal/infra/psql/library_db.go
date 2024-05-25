@@ -8,6 +8,7 @@ import (
 
 	"github.com/agmmtoo/lib-manage/internal/core/library"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
+	"github.com/lib/pq"
 )
 
 func (l *LibraryAppDB) ListLibraries(ctx context.Context, input library.ListRequest) (*library.ListResponse, error) {
@@ -124,7 +125,7 @@ func (l *LibraryAppDB) CreateLibraryBookBatch(ctx context.Context, input []libra
 	var successBookIDs []int
 
 	q := "INSERT INTO library_book (library_id, book_id) VALUES "
-	vals := []interface{}{}
+	vals := []any{}
 
 	for i, lb := range input {
 		q += fmt.Sprintf("($%d, $%d),", i*2+1, i*2+2)
@@ -135,13 +136,24 @@ func (l *LibraryAppDB) CreateLibraryBookBatch(ctx context.Context, input []libra
 	q = q[:len(q)-1]
 
 	if opt.SkipConflict {
-		q += "ON CONFLICT DO NOTHING"
+		q += " ON CONFLICT DO NOTHING"
 	}
 
 	q += " RETURNING book_id;"
 
 	rows, err := l.db.QueryContext(ctx, q, vals...)
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Constraint == "library_book_pkey" {
+				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBDuplicate, pqErr.Detail, err)
+			}
+			if pqErr.Constraint == "library_book_book_id_fkey" {
+				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, pqErr.Detail, err)
+			}
+			if pqErr.Constraint == "library_book_library_id_fkey" {
+				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, pqErr.Detail, err)
+			}
+		}
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBExec, "error creating library book batch", err)
 	}
 

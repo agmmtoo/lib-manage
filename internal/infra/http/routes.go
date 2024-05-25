@@ -32,7 +32,9 @@ func (s *Server) registerRoutes(
 	mux.HandleFunc("GET /api/v1/libraries", MakeHandler(handler.ListLibraries))
 	mux.HandleFunc("GET /api/v1/libraries/{id}", MakeHandler(handler.GetLibraryByID))
 	mux.HandleFunc("POST /api/v1/libraries", MakeHandler(handler.CreateLibrary))
-	mux.HandleFunc("POST /api/v1/libraries/{id}/assign", MakeHandler(handler.AssignLibraryStaff))
+	mux.HandleFunc("POST /api/v1/libraries/{id}/staffs", MakeHandler(handler.AssignLibraryStaff))
+	mux.HandleFunc("POST /api/v1/libraries/{id}/books", MakeHandler(handler.RegisterLibraryBook))
+	mux.HandleFunc("POST /api/v1/libraries/{id}/books/import", MakeHandler(handler.RegisterLibraryBookBatch))
 
 	return mux
 }

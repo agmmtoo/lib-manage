@@ -90,7 +90,7 @@ func (s *Service) AssignStaff(ctx context.Context, input http.AssignLibraryStaff
 func (s *Service) RegisterBook(ctx context.Context, input http.RegisterLibraryBookRequest) (*http.LibraryBook, error) {
 	result, err := s.repo.CreateLibraryBook(ctx, CreateLibraryBookRequest{
 		LibraryID: input.LibraryID,
-		BookID:    input.BookIDs,
+		BookID:    input.BookID,
 	})
 	if err != nil {
 		return nil, err

@@ -33,7 +33,7 @@ func (h *LibraryAppHandler) GetLoanByID(w http.ResponseWriter, r *http.Request) 
 func (h *LibraryAppHandler) CreateLoan(w http.ResponseWriter, r *http.Request) error {
 	var req CreateLoanRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return InvalidJSON()
+		return InvalidJSON(err)
 	}
 	defer r.Body.Close()
 
