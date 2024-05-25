@@ -7,7 +7,30 @@ import (
 )
 
 func (h *LibraryAppHandler) ListLoans(w http.ResponseWriter, r *http.Request) error {
-	loans, err := h.service.ListLoans(r.Context(), ListLoansRequest{})
+	qLimit := r.URL.Query().Get("limit")
+	limit, err := strconv.Atoi(qLimit)
+	if err != nil {
+		limit = 20
+	}
+
+	qSkip := r.URL.Query().Get("skip")
+	skip, err := strconv.Atoi(qSkip)
+	if err != nil {
+		skip = 0
+	}
+
+	qActive := r.URL.Query().Get("active")
+	active, err := strconv.ParseBool(qActive)
+	if err != nil {
+		active = true
+	}
+
+	loans, err := h.service.ListLoans(r.Context(), ListLoansRequest{
+		Limit:  limit,
+		Skip:   skip,
+		Active: active,
+	})
+
 	if err != nil {
 		return err
 	}

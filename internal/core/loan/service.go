@@ -21,6 +21,7 @@ func (s *Service) List(ctx context.Context, input http.ListLoansRequest) (*http.
 		IDs:    input.IDs,
 		Limit:  input.Limit,
 		Offset: input.Skip,
+		Active: input.Active,
 		// UserID: input.UserID,
 		// BookID: input.BookID,
 	})
@@ -72,16 +73,30 @@ func (s *Service) GetByID(ctx context.Context, id int) (*http.Loan, error) {
 
 func (s *Service) Create(ctx context.Context, input http.CreateLoanRequest) (*http.Loan, error) {
 
-	// TODO:
-	// - check book is available
-	// - check user is not over limit
-	// - set due date based on library rules
-
 	loanDate := time.Now()
 	if input.LoanDate != nil {
 		loanDate = *input.LoanDate
 	}
 
+	// check user's loan limit
+	// settingLimit, err := s.repo.GetSettingValue(ctx, config.SETTING_KEY_MAX_LOAN_PER_USER)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// limit, err := strconv.Atoi(settingLimit)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// // set loan period
+	// settingPeriod, err := s.repo.GetSettingValue(ctx, config.SETTING_KEY_LOAN_PERIOD)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// day, err := strconv.Atoi(settingPeriod)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	dueDate := time.Now().AddDate(0, 0, 7)
 	if input.DueDate != nil {
 		dueDate = *input.DueDate
@@ -118,14 +133,18 @@ type Storer interface {
 	ListLoans(ctx context.Context, input ListRequest) (*ListResponse, error)
 	GetLoanByID(ctx context.Context, id int) (*libraryapp.Loan, error)
 	CreateLoan(ctx context.Context, input CreateRequest) (*libraryapp.Loan, error)
+
+	// GetSettingValue(ctx context.Context, key string) (string, error)
 }
 
 type ListRequest struct {
-	IDs    []int
-	UserID int
-	BookID int
-	Limit  int
-	Offset int
+	IDs        []int
+	Active     bool
+	UserIDs    []int
+	BookIDs    []int
+	LibraryIDs []int
+	Limit      int
+	Offset     int
 }
 
 type ListResponse struct {

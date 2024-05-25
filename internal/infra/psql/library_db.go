@@ -8,6 +8,7 @@ import (
 
 	"github.com/agmmtoo/lib-manage/internal/core/library"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
+	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
 	"github.com/lib/pq"
 )
 
@@ -68,6 +69,18 @@ func (l *LibraryAppDB) CreateLibrary(ctx context.Context, input library.CreateRe
 	err := row.Scan(&lib.ID, &lib.Name, &lib.CreatedAt, &lib.UpdatedAt, &lib.DeletedAt)
 	if err != nil {
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating library", err)
+	}
+
+	// Create default settings for the library
+	qs := "INSERT INTO settings (library_id, key, value) VALUES ($1, $2, $3), ($1, $4, $5), ($1, $6, $7);"
+	_, err = l.db.ExecContext(ctx, qs, lib.ID,
+		config.SETTING_KEY_MAX_LOAN_PER_USER, config.SETTING_DEFAULT_MAX_LOAN_PER_USER,
+		config.SETTING_KEY_LOAN_PERIOD, config.SETTING_DEFAULT_LOAN_PERIOD,
+		config.SETTING_KEY_FINE_PER_DAY, config.SETTING_DEFAULT_FINE_PER_DAY,
+	)
+
+	if err != nil {
+		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBExec, "error creating library settings", err)
 	}
 
 	return &lib, nil

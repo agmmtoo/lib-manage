@@ -127,6 +127,7 @@ type ListLoansRequest struct {
 	IDs     []int
 	Limit   int
 	Skip    int
+	Active  bool
 	DueDate time.Time
 }
 
