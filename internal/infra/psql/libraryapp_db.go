@@ -69,6 +69,7 @@ func (l *LibraryAppDB) Migrate() error {
 		"create_table_library_book.sql",
 		"create_table_library_staff.sql",
 		"create_table_loan.sql",
+		"create_table_setting.sql",
 	}
 
 	var tq string

@@ -33,7 +33,7 @@ func (h *LibraryAppHandler) GetStaffByID(w http.ResponseWriter, r *http.Request)
 func (h *LibraryAppHandler) CreateStaff(w http.ResponseWriter, r *http.Request) error {
 	var req CreateStaffRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return InvalidJSON()
+		return InvalidJSON(err)
 	}
 	defer r.Body.Close()
 

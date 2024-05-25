@@ -102,6 +102,18 @@ func (s *Service) CreateStaff(ctx context.Context, input http.CreateStaffRequest
 	return s.staff.Create(ctx, input)
 }
 
+func (s *Service) AssignLibraryStaff(ctx context.Context, input http.AssignLibraryStaffRequest) (*http.LibraryStaff, error) {
+	return s.library.AssignStaff(ctx, input)
+}
+
+func (s *Service) RegisterLibraryBook(ctx context.Context, input http.RegisterLibraryBookRequest) (*http.LibraryBook, error) {
+	return s.library.RegisterBook(ctx, input)
+}
+
+func (s *Service) RegisterLibraryBookBatch(ctx context.Context, input http.RegisterLibraryBookBatchRequest) (*http.RegisterLibraryBookBatchResponse, error) {
+	return s.library.RegisterBookBatch(ctx, input)
+}
+
 // func (s *Service) GetUsersByBookName(ctx context.Context, name string) ([]*libraryapp.User, error) {
 // 	books, err := s.bookService.GetList(ctx, BookGetListInput{
 // 		Name: name,

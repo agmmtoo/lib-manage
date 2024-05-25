@@ -33,7 +33,7 @@ func (h *LibraryAppHandler) GetUserByID(w http.ResponseWriter, r *http.Request) 
 func (h *LibraryAppHandler) CreateUser(w http.ResponseWriter, r *http.Request) error {
 	var req CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return InvalidJSON()
+		return InvalidJSON(err)
 	}
 	defer r.Body.Close()
 

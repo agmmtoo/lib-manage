@@ -2,10 +2,12 @@ package loan
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
+	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
 )
 
 type Service struct {
@@ -18,11 +20,14 @@ func New(repo Storer) *Service {
 
 func (s *Service) List(ctx context.Context, input http.ListLoansRequest) (*http.ListLoansResponse, error) {
 	result, err := s.repo.ListLoans(ctx, ListRequest{
-		IDs:    input.IDs,
-		Limit:  input.Limit,
-		Offset: input.Skip,
-		// UserID: input.UserID,
-		// BookID: input.BookID,
+		IDs:        input.IDs,
+		Limit:      input.Limit,
+		Offset:     input.Skip,
+		Active:     input.Active,
+		UserIDs:    input.UserIDs,
+		BookIDs:    input.BookIDs,
+		LibraryIDs: input.LibraryIDs,
+		StaffIDs:   input.StaffIDs,
 	})
 	if err != nil {
 		return nil, err
@@ -72,17 +77,43 @@ func (s *Service) GetByID(ctx context.Context, id int) (*http.Loan, error) {
 
 func (s *Service) Create(ctx context.Context, input http.CreateLoanRequest) (*http.Loan, error) {
 
-	// TODO:
-	// - check book is available
-	// - check user is not over limit
-	// - set due date based on library rules
-
 	loanDate := time.Now()
 	if input.LoanDate != nil {
 		loanDate = *input.LoanDate
 	}
 
-	dueDate := time.Now().AddDate(0, 0, 7)
+	// check user's loan limit setting
+	settingLimit, err := s.repo.GetSettingValue(ctx, input.LibraryID, config.SETTING_KEY_MAX_LOAN_PER_USER)
+	if err != nil {
+		return nil, err
+	}
+	limit, err := strconv.Atoi(settingLimit)
+	if err != nil {
+		return nil, err
+	}
+	activeLoans, err := s.repo.ListLoans(ctx, ListRequest{
+		UserIDs:    []int{input.UserID},
+		LibraryIDs: []int{input.LibraryID},
+		Active:     true,
+		Limit:      limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(activeLoans.Loans) >= limit {
+		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeForbidden, "user has reached loan limit", nil)
+	}
+
+	// set due date based on loan period setting
+	settingPeriod, err := s.repo.GetSettingValue(ctx, input.LibraryID, config.SETTING_KEY_LOAN_PERIOD)
+	if err != nil {
+		return nil, err
+	}
+	day, err := strconv.Atoi(settingPeriod)
+	if err != nil {
+		return nil, err
+	}
+	dueDate := time.Now().AddDate(0, 0, day)
 	if input.DueDate != nil {
 		dueDate = *input.DueDate
 	}
@@ -118,14 +149,19 @@ type Storer interface {
 	ListLoans(ctx context.Context, input ListRequest) (*ListResponse, error)
 	GetLoanByID(ctx context.Context, id int) (*libraryapp.Loan, error)
 	CreateLoan(ctx context.Context, input CreateRequest) (*libraryapp.Loan, error)
+
+	GetSettingValue(ctx context.Context, libraryID int, key string) (string, error)
 }
 
 type ListRequest struct {
-	IDs    []int
-	UserID int
-	BookID int
-	Limit  int
-	Offset int
+	IDs        []int
+	Active     bool
+	UserIDs    []int
+	BookIDs    []int
+	LibraryIDs []int
+	StaffIDs   []int
+	Limit      int
+	Offset     int
 }
 
 type ListResponse struct {
