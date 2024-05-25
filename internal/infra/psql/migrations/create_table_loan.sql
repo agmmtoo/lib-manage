@@ -42,7 +42,7 @@ EXECUTE PROCEDURE update_updated_at_column();
 
 --     -- Step 2: Retrieve max loans per user setting
 --     SELECT value::int INTO max_loans_per_user
---     FROM settings 
+--     FROM setting
 --     WHERE key = 'max_loans_per_user';
 
 --     -- Step 3: Compare and return

@@ -27,3 +27,7 @@ audit:
 build/lib:
 	@echo 'Building cmd/lib...'
 	go build -o ./lib ./cmd/libraryapp
+
+.PHONY: kill
+kill:
+	sudo lsof -t -i :8080 | xargs kill

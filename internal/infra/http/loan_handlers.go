@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func (h *LibraryAppHandler) ListLoans(w http.ResponseWriter, r *http.Request) error {
@@ -22,13 +23,78 @@ func (h *LibraryAppHandler) ListLoans(w http.ResponseWriter, r *http.Request) er
 	qActive := r.URL.Query().Get("active")
 	active, err := strconv.ParseBool(qActive)
 	if err != nil {
-		active = true
+		active = false
+	}
+
+	var ids []int
+	if qIDs := r.URL.Query().Get("ids"); qIDs != "" {
+		for _, id := range strings.Split(qIDs, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return InvalidRequestData(map[string]string{"ids": "invalid"})
+			}
+			ids = append(ids, i)
+		}
+
+	}
+
+	var userIDs []int
+	if qIDs := r.URL.Query().Get("user_ids"); strings.TrimSpace(qIDs) != "" {
+		for _, id := range strings.Split(qIDs, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return InvalidRequestData(map[string]string{"user_ids": "invalid"})
+			}
+			userIDs = append(userIDs, i)
+		}
+
+	}
+
+	var bookIDS []int
+	if qIDs := r.URL.Query().Get("book_ids"); strings.TrimSpace(qIDs) != "" {
+		for _, id := range strings.Split(qIDs, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return InvalidRequestData(map[string]string{"book_ids": "invalid"})
+			}
+			bookIDS = append(bookIDS, i)
+		}
+
+	}
+
+	var libIDs []int
+	if qIDs := r.URL.Query().Get("library_ids"); strings.TrimSpace(qIDs) != "" {
+		for _, id := range strings.Split(qIDs, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return InvalidRequestData(map[string]string{"library_ids": "invalid"})
+			}
+			libIDs = append(libIDs, i)
+		}
+
+	}
+
+	var staffIDs []int
+	if qIDs := r.URL.Query().Get("staff_ids"); strings.TrimSpace(qIDs) != "" {
+		for _, id := range strings.Split(qIDs, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return InvalidRequestData(map[string]string{"staff_ids": "invalid"})
+			}
+			staffIDs = append(staffIDs, i)
+		}
+
 	}
 
 	loans, err := h.service.ListLoans(r.Context(), ListLoansRequest{
-		Limit:  limit,
-		Skip:   skip,
-		Active: active,
+		Limit:      limit,
+		Skip:       skip,
+		Active:     active,
+		IDs:        ids,
+		UserIDs:    userIDs,
+		BookIDs:    bookIDS,
+		LibraryIDs: libIDs,
+		StaffIDs:   staffIDs,
 	})
 
 	if err != nil {

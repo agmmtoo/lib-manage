@@ -124,11 +124,15 @@ type Loan struct {
 }
 
 type ListLoansRequest struct {
-	IDs     []int
-	Limit   int
-	Skip    int
-	Active  bool
-	DueDate time.Time
+	IDs        []int
+	Limit      int
+	Skip       int
+	Active     bool
+	UserIDs    []int
+	BookIDs    []int
+	LibraryIDs []int
+	StaffIDs   []int
+	DueDate    time.Time
 }
 
 type ListLoansResponse = ListResponse[Loan]

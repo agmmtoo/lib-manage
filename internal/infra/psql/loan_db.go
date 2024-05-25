@@ -12,50 +12,8 @@ import (
 )
 
 func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*loan.ListResponse, error) {
-	// q := "SELECT id, book_id, user_id, library_id, staff_id, loan_date, due_date, return_date, created_at, updated_at, deleted_at FROM loan"
-	// args := []any{}
 
-	baseQuery := "SELECT * FROM loan WHERE 1=1"
-	var params []interface{}
-	var conditions []string
-	var paramCounter = 1
-
-	if len(input.IDs) > 0 {
-		conditions = append(conditions, fmt.Sprintf("id = ANY($%d)", paramCounter))
-		params = append(params, pq.Array(input.IDs))
-		paramCounter++
-	}
-	if input.Active {
-		conditions = append(conditions, fmt.Sprintf("return_date IS NULL"))
-	}
-	if len(input.UserIDs) > 0 {
-		conditions = append(conditions, fmt.Sprintf("user_id = ANY($%d)", paramCounter))
-		params = append(params, pq.Array(input.UserIDs))
-		paramCounter++
-	}
-	if len(input.BookIDs) > 0 {
-		conditions = append(conditions, fmt.Sprintf("book_id = ANY($%d)", paramCounter))
-		params = append(params, pq.Array(input.BookIDs))
-		paramCounter++
-	}
-	if len(input.LibraryIDs) > 0 {
-		conditions = append(conditions, fmt.Sprintf("library_id = ANY($%d)", paramCounter))
-		params = append(params, pq.Array(input.LibraryIDs))
-		paramCounter++
-	}
-
-	finalQuery := baseQuery + " " + strings.Join(conditions, " AND ")
-
-	if input.Limit > 0 {
-		finalQuery += fmt.Sprintf(" LIMIT $%d", paramCounter)
-		params = append(params, input.Limit)
-		paramCounter++
-	}
-	if input.Offset > 0 {
-		finalQuery += fmt.Sprintf(" OFFSET $%d", paramCounter)
-		params = append(params, input.Offset)
-		paramCounter++
-	}
+	finalQuery, params := buildListQuery(input)
 
 	fmt.Println(finalQuery, params)
 	rows, err := l.db.QueryContext(ctx, finalQuery, params...)
@@ -131,4 +89,52 @@ func (l *LibraryAppDB) CreateLoan(ctx context.Context, input loan.CreateRequest)
 	}
 
 	return &lo, nil
+}
+
+func buildListQuery(req loan.ListRequest) (string, []interface{}) {
+	var (
+		clauses      []string
+		params       []any
+		paramCounter = 1
+	)
+
+	if len(req.IDs) > 0 {
+		clauses = append(clauses, fmt.Sprintf("id = ANY($%d)", paramCounter))
+		params = append(params, pq.Array(req.IDs))
+		paramCounter++
+	}
+	if req.Active {
+		clauses = append(clauses, "return_date IS NULL")
+	}
+	if len(req.UserIDs) > 0 {
+		clauses = append(clauses, fmt.Sprintf("user_id = ANY($%d)", paramCounter))
+		params = append(params, pq.Array(req.UserIDs))
+		paramCounter++
+	}
+	if len(req.BookIDs) > 0 {
+		clauses = append(clauses, fmt.Sprintf("book_id = ANY($%d)", paramCounter))
+		params = append(params, pq.Array(req.BookIDs))
+		paramCounter++
+	}
+	if len(req.LibraryIDs) > 0 {
+		clauses = append(clauses, fmt.Sprintf("library_id = ANY($%d)", paramCounter))
+		params = append(params, pq.Array(req.LibraryIDs))
+		paramCounter++
+	}
+
+	query := "SELECT * FROM loan"
+
+	if len(clauses) > 0 {
+		query += " WHERE " + strings.Join(clauses, " AND ")
+	}
+	if req.Limit > 0 {
+		query += fmt.Sprintf(" LIMIT $%d", len(params)+1)
+		params = append(params, req.Limit)
+	}
+	if req.Offset > 0 {
+		query += fmt.Sprintf(" OFFSET $%d", len(params)+1)
+		params = append(params, req.Offset)
+	}
+
+	return query, params
 }

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS settings (
+CREATE TABLE IF NOT EXISTS setting (
     id SERIAL PRIMARY KEY,
     library_id INT NOT NULL REFERENCES library(id),
     key VARCHAR(255) NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS settings (
     UNIQUE (library_id, key)
 );
 
-CREATE OR REPLACE TRIGGER update_settings_updated_at
-BEFORE UPDATE ON settings
+CREATE OR REPLACE TRIGGER update_setting_updated_at
+BEFORE UPDATE ON setting
 FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at_column();
