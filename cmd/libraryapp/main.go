@@ -9,6 +9,7 @@ import (
 	libraryService "github.com/agmmtoo/lib-manage/internal/core/library"
 	"github.com/agmmtoo/lib-manage/internal/core/libraryapp"
 	loanService "github.com/agmmtoo/lib-manage/internal/core/loan"
+	settingService "github.com/agmmtoo/lib-manage/internal/core/setting"
 	staffService "github.com/agmmtoo/lib-manage/internal/core/staff"
 	userService "github.com/agmmtoo/lib-manage/internal/core/user"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
@@ -34,8 +35,9 @@ func main() {
 	library := libraryService.New(db)
 	loan := loanService.New(db)
 	staff := staffService.New(db)
+	setting := settingService.New(db)
 
-	service := libraryapp.New(user, book, library, loan, staff)
+	service := libraryapp.New(user, book, library, loan, staff, setting)
 
 	server, err := http.NewServer(":8080", service)
 

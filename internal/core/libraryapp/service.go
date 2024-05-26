@@ -6,6 +6,7 @@ import (
 	"github.com/agmmtoo/lib-manage/internal/core/book"
 	"github.com/agmmtoo/lib-manage/internal/core/library"
 	"github.com/agmmtoo/lib-manage/internal/core/loan"
+	"github.com/agmmtoo/lib-manage/internal/core/setting"
 	"github.com/agmmtoo/lib-manage/internal/core/staff"
 	"github.com/agmmtoo/lib-manage/internal/core/user"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
@@ -19,6 +20,7 @@ type Service struct {
 	library *library.Service
 	loan    *loan.Service
 	staff   *staff.Service
+	setting *setting.Service
 }
 
 func New(
@@ -27,6 +29,7 @@ func New(
 	library *library.Service,
 	loan *loan.Service,
 	staff *staff.Service,
+	setting *setting.Service,
 ) *Service {
 	return &Service{
 		user:    user,
@@ -34,6 +37,7 @@ func New(
 		library: library,
 		loan:    loan,
 		staff:   staff,
+		setting: setting,
 	}
 }
 
@@ -112,6 +116,14 @@ func (s *Service) RegisterLibraryBook(ctx context.Context, input http.RegisterLi
 
 func (s *Service) RegisterLibraryBookBatch(ctx context.Context, input http.RegisterLibraryBookBatchRequest) (*http.RegisterLibraryBookBatchResponse, error) {
 	return s.library.RegisterBookBatch(ctx, input)
+}
+
+func (s *Service) ListLibrarySettings(ctx context.Context, input http.ListSettingsRequest) (*http.ListSettingsResponse, error) {
+	return s.setting.List(ctx, input)
+}
+
+func (s *Service) UpdateLibrarySettings(ctx context.Context, input http.UpdateSettingsRequest) ([]*http.Setting, error) {
+	return s.setting.Update(ctx, input)
 }
 
 // func (s *Service) GetUsersByBookName(ctx context.Context, name string) ([]*libraryapp.User, error) {

@@ -30,6 +30,9 @@ type Servicer interface {
 	GetStaffByID(ctx context.Context, id int) (*Staff, error)
 	CreateStaff(ctx context.Context, input CreateStaffRequest) (*Staff, error)
 
+	ListLibrarySettings(ctx context.Context, input ListSettingsRequest) (*ListSettingsResponse, error)
+	UpdateLibrarySettings(ctx context.Context, input UpdateSettingsRequest) ([]*Setting, error)
+
 	// GetUsersByBookName(ctx context.Context, name string) ([]*libraryapp.User, error)
 
 	Ping(ctx context.Context) (string, error)
@@ -195,4 +198,29 @@ type LibraryBook struct {
 type RegisterLibraryBookBatchResponse struct {
 	LibraryID      int   `json:"-"`
 	SuccessBookIDs []int `json:"success_book_ids"`
+}
+
+type Setting struct {
+	ID        int        `json:"id"`
+	LibraryID int        `json:"-"`
+	Key       string     `json:"key"`
+	Value     string     `json:"value"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+}
+
+type ListSettingsRequest struct {
+	IDs        []int  `json:"ids"`
+	LibraryIDs []int  `json:"-"`
+	Key        string `json:"key"`
+	Skip       int    `json:"skip"`
+	Limit      int    `json:"limit"`
+}
+
+type ListSettingsResponse = ListResponse[Setting]
+
+type UpdateSettingsRequest = []struct {
+	ID    int    `json:"id"`
+	Value string `json:"value"`
 }
