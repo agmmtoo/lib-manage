@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/agmmtoo/lib-manage/internal/core/setting"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
@@ -31,12 +30,25 @@ func (l *LibraryAppDB) GetSettingValue(ctx context.Context, libraryID int, key s
 
 func (l *LibraryAppDB) ListSettings(ctx context.Context, input setting.ListRequest) (*setting.ListResponse, error) {
 
-	finalQuery, params := _buildListQuery(input)
+	qb := &QueryBuilder{
+		Table:        "setting",
+		ParamCounter: 1,
+	}
+	if len(input.IDs) > 0 {
+		qb.AddClause("id = ANY($%d)", pq.Array(input.IDs))
+	}
+	if len(input.Key) > 0 {
+		qb.AddClause("key ILIKE $%d", fmt.Sprintf("%%%s%%", input.Key))
+	}
+	if len(input.LibraryIDs) > 0 {
+		qb.AddClause("library_id = ANY($%d)", pq.Array(input.LibraryIDs))
+	}
+	qb.SetLimit(input.Limit)
+	qb.SetOffset(input.Offset)
 
-	fmt.Println(finalQuery, params)
+	query, params := qb.Build()
 
-	// q := "SELECT id, library_id, key, value, created_at, updated_at, deleted_at FROM setting;"
-	rows, err := l.db.QueryContext(ctx, finalQuery, params...)
+	rows, err := l.db.QueryContext(ctx, query, params...)
 	if err != nil {
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing settings", err)
 	}
@@ -78,44 +90,4 @@ func (l *LibraryAppDB) UpdateSettingValues(ctx context.Context, input []setting.
 	}
 
 	return result, nil
-}
-
-func _buildListQuery(req setting.ListRequest) (string, []interface{}) {
-	var (
-		clauses      []string
-		params       []any
-		paramCounter = 1
-	)
-
-	if len(req.IDs) > 0 {
-		clauses = append(clauses, fmt.Sprintf("id = ANY($%d)", paramCounter))
-		params = append(params, pq.Array(req.IDs))
-		paramCounter++
-	}
-	if len(req.Key) > 0 {
-		clauses = append(clauses, fmt.Sprintf("key LIKE $%d", paramCounter))
-		params = append(params, fmt.Sprintf("%%%s%%", req.Key))
-		paramCounter++
-	}
-	if len(req.LibraryIDs) > 0 {
-		clauses = append(clauses, fmt.Sprintf("library_id = ANY($%d)", paramCounter))
-		params = append(params, pq.Array(req.LibraryIDs))
-		paramCounter++
-	}
-
-	query := "SELECT * FROM setting"
-
-	if len(clauses) > 0 {
-		query += " WHERE " + strings.Join(clauses, " AND ")
-	}
-	if req.Limit > 0 {
-		query += fmt.Sprintf(" LIMIT $%d", len(params)+1)
-		params = append(params, req.Limit)
-	}
-	if req.Offset > 0 {
-		query += fmt.Sprintf(" OFFSET $%d", len(params)+1)
-		params = append(params, req.Offset)
-	}
-
-	return query, params
 }

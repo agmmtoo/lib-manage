@@ -19,9 +19,9 @@ func (s *Service) List(ctx context.Context, input http.ListStaffsRequest) (*http
 	result, err := s.repo.ListStaffs(ctx, ListRequest{
 		IDs:    input.IDs,
 		Limit:  input.Limit,
-		Offset: input.Limit,
+		Offset: input.Skip,
 		// Name: input.Name,
-		// UserIDs: input.UserIDs,
+		UserIDs: input.UserIDs,
 		// LibraryIDs: input.LibraryIDs,
 	})
 	if err != nil {
@@ -80,12 +80,10 @@ type Storer interface {
 }
 
 type ListRequest struct {
-	IDs        []int
-	Name       string
-	UserIDs    []int
-	LibraryIDs []int
-	Limit      int
-	Offset     int
+	IDs     []int
+	UserIDs []int
+	Limit   int
+	Offset  int
 }
 
 type ListResponse struct {

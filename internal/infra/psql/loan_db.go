@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/agmmtoo/lib-manage/internal/core/loan"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
@@ -13,10 +12,31 @@ import (
 
 func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*loan.ListResponse, error) {
 
-	finalQuery, params := buildListQuery(input)
+	qb := &QueryBuilder{
+		Table:        "loan",
+		ParamCounter: 1,
+	}
 
-	fmt.Println(finalQuery, params)
-	rows, err := l.db.QueryContext(ctx, finalQuery, params...)
+	if len(input.IDs) > 0 {
+		qb.AddClause("id = ANY($%d)", pq.Array(input.IDs))
+	}
+	if input.Active {
+		qb.AddClause("return_date IS NULL")
+	}
+	if len(input.UserIDs) > 0 {
+		qb.AddClause("user_id = ANY($%d)", pq.Array(input.UserIDs))
+	}
+	if len(input.BookIDs) > 0 {
+		qb.AddClause("book_id = ANY($%d)", pq.Array(input.BookIDs))
+	}
+	if len(input.LibraryIDs) > 0 {
+		qb.AddClause("library_id = ANY($%d)", pq.Array(input.LibraryIDs))
+	}
+	qb.SetLimit(input.Limit)
+	qb.SetOffset(input.Offset)
+
+	query, params := qb.Build()
+	rows, err := l.db.QueryContext(ctx, query, params...)
 	if err != nil {
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing loans", err)
 	}
@@ -89,52 +109,4 @@ func (l *LibraryAppDB) CreateLoan(ctx context.Context, input loan.CreateRequest)
 	}
 
 	return &lo, nil
-}
-
-func buildListQuery(req loan.ListRequest) (string, []interface{}) {
-	var (
-		clauses      []string
-		params       []any
-		paramCounter = 1
-	)
-
-	if len(req.IDs) > 0 {
-		clauses = append(clauses, fmt.Sprintf("id = ANY($%d)", paramCounter))
-		params = append(params, pq.Array(req.IDs))
-		paramCounter++
-	}
-	if req.Active {
-		clauses = append(clauses, "return_date IS NULL")
-	}
-	if len(req.UserIDs) > 0 {
-		clauses = append(clauses, fmt.Sprintf("user_id = ANY($%d)", paramCounter))
-		params = append(params, pq.Array(req.UserIDs))
-		paramCounter++
-	}
-	if len(req.BookIDs) > 0 {
-		clauses = append(clauses, fmt.Sprintf("book_id = ANY($%d)", paramCounter))
-		params = append(params, pq.Array(req.BookIDs))
-		paramCounter++
-	}
-	if len(req.LibraryIDs) > 0 {
-		clauses = append(clauses, fmt.Sprintf("library_id = ANY($%d)", paramCounter))
-		params = append(params, pq.Array(req.LibraryIDs))
-		paramCounter++
-	}
-
-	query := "SELECT * FROM loan"
-
-	if len(clauses) > 0 {
-		query += " WHERE " + strings.Join(clauses, " AND ")
-	}
-	if req.Limit > 0 {
-		query += fmt.Sprintf(" LIMIT $%d", len(params)+1)
-		params = append(params, req.Limit)
-	}
-	if req.Offset > 0 {
-		query += fmt.Sprintf(" OFFSET $%d", len(params)+1)
-		params = append(params, req.Offset)
-	}
-
-	return query, params
 }

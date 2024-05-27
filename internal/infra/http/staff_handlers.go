@@ -4,10 +4,52 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
 )
 
 func (h *LibraryAppHandler) ListStaffs(w http.ResponseWriter, r *http.Request) error {
-	staffs, err := h.service.ListStaffs(r.Context(), ListStaffsRequest{})
+	qLimit := r.URL.Query().Get("limit")
+	limit, err := strconv.Atoi(qLimit)
+	if err != nil {
+		limit = config.API_DEFAULT_LIMIT
+	}
+
+	qSkip := r.URL.Query().Get("skip")
+	skip, err := strconv.Atoi(qSkip)
+	if err != nil {
+		skip = config.API_DEFAULT_SKIP
+	}
+
+	var ids []int
+	if qIDs := r.URL.Query().Get("ids"); qIDs != "" {
+		for _, id := range strings.Split(qIDs, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return InvalidRequestData(map[string]string{"ids": "invalid"})
+			}
+			ids = append(ids, i)
+		}
+	}
+
+	var userIDs []int
+	if qIDs := r.URL.Query().Get("user_ids"); qIDs != "" {
+		for _, id := range strings.Split(qIDs, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return InvalidRequestData(map[string]string{"user_ids": "invalid"})
+			}
+			ids = append(ids, i)
+		}
+	}
+
+	staffs, err := h.service.ListStaffs(r.Context(), ListStaffsRequest{
+		IDs:     ids,
+		UserIDs: userIDs,
+		Limit:   limit,
+		Skip:    skip,
+	})
 	if err != nil {
 		return err
 	}

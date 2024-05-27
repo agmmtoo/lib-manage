@@ -7,11 +7,24 @@ import (
 
 	"github.com/agmmtoo/lib-manage/internal/core/staff"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
+	"github.com/lib/pq"
 )
 
 func (l *LibraryAppDB) ListStaffs(ctx context.Context, input staff.ListRequest) (*staff.ListResponse, error) {
-	q := "SELECT id, user_id, created_at, updated_at, deleted_at FROM staff;"
-	args := []any{}
+	qb := &QueryBuilder{
+		Table:        "staff",
+		ParamCounter: 1,
+	}
+	if len(input.IDs) > 0 {
+		qb.AddClause("id = ANY($%d)", pq.Array(input.IDs))
+	}
+	if len(input.UserIDs) > 0 {
+		qb.AddClause("id = ANY($%d)", pq.Array(input.UserIDs))
+	}
+	qb.SetLimit(input.Limit)
+	qb.SetOffset(input.Offset)
+	q, args := qb.Build()
+
 	rows, err := l.db.QueryContext(ctx, q, args...)
 	if err != nil {
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing staffs", err)

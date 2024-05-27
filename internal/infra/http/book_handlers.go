@@ -4,10 +4,45 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
 )
 
 func (h *LibraryAppHandler) ListBooks(w http.ResponseWriter, r *http.Request) error {
-	books, err := h.service.ListBooks(r.Context(), ListBooksRequest{})
+	qLimit := r.URL.Query().Get("limit")
+	limit, err := strconv.Atoi(qLimit)
+	if err != nil {
+		limit = config.API_DEFAULT_LIMIT
+	}
+
+	qSkip := r.URL.Query().Get("skip")
+	skip, err := strconv.Atoi(qSkip)
+	if err != nil {
+		skip = config.API_DEFAULT_SKIP
+	}
+
+	var ids []int
+	if qIDs := r.URL.Query().Get("ids"); qIDs != "" {
+		for _, id := range strings.Split(qIDs, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return InvalidRequestData(map[string]string{"ids": "invalid"})
+			}
+			ids = append(ids, i)
+		}
+	}
+
+	var title = r.URL.Query().Get("title")
+	var author = r.URL.Query().Get("author")
+
+	books, err := h.service.ListBooks(r.Context(), ListBooksRequest{
+		IDs:    ids,
+		Title:  title,
+		Author: author,
+		Limit:  limit,
+		Skip:   skip,
+	})
 	if err != nil {
 		return err
 	}

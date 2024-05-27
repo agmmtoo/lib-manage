@@ -20,7 +20,6 @@ func New(repo Storer) *Service {
 func (s *Service) List(ctx context.Context, input http.ListUsersRequest) (*http.ListUsersResponse, error) {
 	result, err := s.repo.ListUsers(ctx, ListRequest{
 		IDs:      input.IDs,
-		Name:     input.Name,
 		Username: input.Username,
 		Limit:    input.Limit,
 		Offset:   input.Skip,

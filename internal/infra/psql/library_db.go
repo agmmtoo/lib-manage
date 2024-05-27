@@ -13,8 +13,23 @@ import (
 )
 
 func (l *LibraryAppDB) ListLibraries(ctx context.Context, input library.ListRequest) (*library.ListResponse, error) {
-	q := "SELECT id, name, created_at, updated_at, deleted_at FROM library;"
-	args := []any{}
+	// q := "SELECT id, name, created_at, updated_at, deleted_at FROM library;"
+	// args := []any{}
+	qb := &QueryBuilder{
+		Table:        "library",
+		ParamCounter: 1,
+	}
+	if len(input.IDs) > 0 {
+		qb.AddClause("id = ANY($%d)", pq.Array(input.IDs))
+	}
+	if len(input.Name) > 0 {
+		qb.AddClause("name ILIKE $%d", fmt.Sprintf("%%%s%%", input.Name))
+	}
+	qb.AddClause("deleted_at IS NULL")
+	qb.SetLimit(input.Limit)
+	qb.SetOffset(input.Offset)
+	q, args := qb.Build()
+
 	rows, err := l.db.QueryContext(ctx, q, args...)
 	if err != nil {
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing libraries", err)

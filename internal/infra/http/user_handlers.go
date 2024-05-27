@@ -4,10 +4,44 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
 )
 
 func (h *LibraryAppHandler) ListUsers(w http.ResponseWriter, r *http.Request) error {
-	users, err := h.service.ListUsers(r.Context(), ListUsersRequest{})
+
+	qLimit := r.URL.Query().Get("limit")
+	limit, err := strconv.Atoi(qLimit)
+	if err != nil {
+		limit = config.API_DEFAULT_LIMIT
+	}
+
+	qSkip := r.URL.Query().Get("skip")
+	skip, err := strconv.Atoi(qSkip)
+	if err != nil {
+		skip = config.API_DEFAULT_SKIP
+	}
+
+	var ids []int
+	if qIDs := r.URL.Query().Get("ids"); qIDs != "" {
+		for _, id := range strings.Split(qIDs, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return InvalidRequestData(map[string]string{"ids": "invalid"})
+			}
+			ids = append(ids, i)
+		}
+	}
+
+	var username = r.URL.Query().Get("username")
+
+	users, err := h.service.ListUsers(r.Context(), ListUsersRequest{
+		IDs:      ids,
+		Limit:    limit,
+		Skip:     skip,
+		Username: username,
+	})
 	if err != nil {
 		return err
 	}

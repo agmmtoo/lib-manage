@@ -3,14 +3,33 @@ package psql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/agmmtoo/lib-manage/internal/core/book"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
+	"github.com/lib/pq"
 )
 
 func (l *LibraryAppDB) ListBooks(ctx context.Context, input book.ListRequest) (*book.ListResponse, error) {
-	q := "SELECT id, title, author, created_at, updated_at, deleted_at FROM book;"
-	args := []any{}
+
+	qb := &QueryBuilder{
+		Table:        "book",
+		ParamCounter: 1,
+	}
+	if len(input.IDs) > 0 {
+		qb.AddClause("id = ANY($%d)", pq.Array(input.IDs))
+	}
+	if len(input.Title) > 0 {
+		qb.AddClause("title ILIKE $%d", fmt.Sprintf("%%%s%%", input.Title))
+	}
+	if len(input.Author) > 0 {
+		qb.AddClause("author ILIKE $%d", fmt.Sprintf("%%%s%%", input.Author))
+	}
+	qb.AddClause("deleted_at IS NULL")
+	qb.SetLimit(input.Limit)
+	qb.SetOffset(input.Offset)
+
+	q, args := qb.Build()
 	rows, err := l.db.QueryContext(ctx, q, args...)
 	if err != nil {
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing books", err)

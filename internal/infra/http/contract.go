@@ -47,7 +47,6 @@ type ListUsersRequest struct {
 	IDs      []int
 	Limit    int
 	Skip     int
-	Name     string
 	Username string
 }
 
@@ -159,9 +158,10 @@ type Staff struct {
 }
 
 type ListStaffsRequest struct {
-	IDs   []int
-	Limit int
-	Skip  int
+	IDs     []int
+	UserIDs []int
+	Limit   int
+	Skip    int
 }
 
 type ListStaffsResponse = ListResponse[Staff]

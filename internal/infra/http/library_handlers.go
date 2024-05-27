@@ -4,12 +4,42 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
 )
 
 func (h *LibraryAppHandler) ListLibraries(w http.ResponseWriter, r *http.Request) error {
+
+	qLimit := r.URL.Query().Get("limit")
+	limit, err := strconv.Atoi(qLimit)
+	if err != nil {
+		limit = config.API_DEFAULT_LIMIT
+	}
+
+	qSkip := r.URL.Query().Get("skip")
+	skip, err := strconv.Atoi(qSkip)
+	if err != nil {
+		skip = config.API_DEFAULT_SKIP
+	}
+
+	var ids []int
+	if qIDs := r.URL.Query().Get("ids"); qIDs != "" {
+		for _, id := range strings.Split(qIDs, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return InvalidRequestData(map[string]string{"ids": "invalid"})
+			}
+			ids = append(ids, i)
+		}
+	}
+
+	var name = r.URL.Query().Get("name")
 	libraries, err := h.service.ListLibraries(r.Context(), ListLibrariesRequest{
-		// Skip: skip,
-		// Limit: limit,
+		IDs:   ids,
+		Name:  name,
+		Skip:  skip,
+		Limit: limit,
 	})
 	if err != nil {
 		return err

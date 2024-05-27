@@ -3,15 +3,30 @@ package psql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"github.com/agmmtoo/lib-manage/internal/core/user"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
+	"github.com/lib/pq"
 )
 
 func (l *LibraryAppDB) ListUsers(ctx context.Context, input user.ListRequest) (*user.ListResponse, error) {
-	q := "SELECT id, username, password, created_at, updated_at, deleted_at FROM \"user\";"
-	args := []any{}
+	qb := &QueryBuilder{
+		Table:        "\"user\"",
+		ParamCounter: 1,
+		Cols:         []string{"id", "username", "created_at", "updated_at", "deleted_at"},
+	}
+	if len(input.IDs) > 0 {
+		qb.AddClause("id = ANY($%d)", pq.Array(input.IDs))
+	}
+	if len(input.Username) > 0 {
+		qb.AddClause("username ILIKE $%d", fmt.Sprintf("%%%s%%", input.Username))
+	}
+	qb.SetLimit(input.Limit)
+	qb.SetOffset(input.Offset)
+	q, args := qb.Build()
+
 	rows, err := l.db.QueryContext(ctx, q, args...)
 	if err != nil {
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing users", err)
@@ -22,7 +37,7 @@ func (l *LibraryAppDB) ListUsers(ctx context.Context, input user.ListRequest) (*
 	var users []*libraryapp.User
 	for rows.Next() {
 		var u libraryapp.User
-		err := rows.Scan(&u.ID, &u.Username, &u.Password, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
+		err := rows.Scan(&u.ID, &u.Username, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
 		if err != nil {
 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning user", err)
 		}

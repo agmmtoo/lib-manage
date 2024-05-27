@@ -9,3 +9,9 @@ const (
 	SETTING_KEY_FINE_PER_DAY          = "FINE_PER_DAY"
 	SETTING_DEFAULT_FINE_PER_DAY      = 1 // unit currency
 )
+
+// api default values
+const (
+	API_DEFAULT_LIMIT = 10
+	API_DEFAULT_SKIP  = 0
+)

@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
 )
 
 func (h *LibraryAppHandler) ListLibrarySettings(w http.ResponseWriter, r *http.Request) error {
@@ -17,13 +19,13 @@ func (h *LibraryAppHandler) ListLibrarySettings(w http.ResponseWriter, r *http.R
 	qLimit := r.URL.Query().Get("limit")
 	limit, err := strconv.Atoi(qLimit)
 	if err != nil {
-		limit = 20
+		limit = config.API_DEFAULT_LIMIT
 	}
 
 	qSkip := r.URL.Query().Get("skip")
 	skip, err := strconv.Atoi(qSkip)
 	if err != nil {
-		skip = 0
+		skip = config.API_DEFAULT_SKIP
 	}
 
 	var ids []int
