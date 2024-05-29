@@ -7,7 +7,7 @@ import (
 
 	"github.com/agmmtoo/lib-manage/internal/core/loan"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*loan.ListResponse, error) {
@@ -18,19 +18,19 @@ func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*
 	}
 
 	if len(input.IDs) > 0 {
-		qb.AddClause("id = ANY($%d)", pq.Array(input.IDs))
+		qb.AddClause("id = ANY($%d)", input.IDs)
 	}
 	if input.Active {
 		qb.AddClause("return_date IS NULL")
 	}
 	if len(input.UserIDs) > 0 {
-		qb.AddClause("user_id = ANY($%d)", pq.Array(input.UserIDs))
+		qb.AddClause("user_id = ANY($%d)", input.UserIDs)
 	}
 	if len(input.BookIDs) > 0 {
-		qb.AddClause("book_id = ANY($%d)", pq.Array(input.BookIDs))
+		qb.AddClause("book_id = ANY($%d)", input.BookIDs)
 	}
 	if len(input.LibraryIDs) > 0 {
-		qb.AddClause("library_id = ANY($%d)", pq.Array(input.LibraryIDs))
+		qb.AddClause("library_id = ANY($%d)", input.LibraryIDs)
 	}
 	qb.SetLimit(input.Limit)
 	qb.SetOffset(input.Offset)
@@ -90,18 +90,18 @@ func (l *LibraryAppDB) CreateLoan(ctx context.Context, input loan.CreateRequest)
 	err := row.Scan(&lo.ID, &lo.UserID, &lo.BookID, &lo.LibraryID, &lo.StaffID, &lo.LoanDate, &lo.DueDate, &lo.ReturnDate, &lo.CreatedAt, &lo.UpdatedAt, &lo.DeletedAt)
 
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			fmt.Println(pqErr.Detail)
-			if pqErr.Constraint == "loan_user_id_fkey" {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			fmt.Println(pgErr.Detail)
+			if pgErr.ConstraintName == "loan_user_id_fkey" {
 				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "user not found", err)
 			}
-			if pqErr.Constraint == "loan_library_id_staff_id_fkey" {
+			if pgErr.ConstraintName == "loan_library_id_staff_id_fkey" {
 				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "library or staff not found", err)
 			}
-			if pqErr.Constraint == "loan_library_id_book_id_fkey" {
+			if pgErr.ConstraintName == "loan_library_id_book_id_fkey" {
 				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "library or book not found", err)
 			}
-			if pqErr.Constraint == "loan_unique_active" {
+			if pgErr.ConstraintName == "loan_unique_active" {
 				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBDuplicate, "book already loaned", err)
 			}
 		}

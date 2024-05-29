@@ -3,10 +3,13 @@ package psql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"os"
 	"path"
 
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 )
 
 // LibraryAppDB represents the database connection.
@@ -17,10 +20,29 @@ type LibraryAppDB struct {
 
 // NewLibraryAppDB creates a new LibraryAppDB.
 func NewLibraryAppDB(dataSourceName string) (*LibraryAppDB, error) {
-	db, err := sql.Open("postgres", dataSourceName)
+
+	config, err := pgxpool.ParseConfig(dataSourceName)
 	if err != nil {
 		return nil, err
 	}
+
+	config.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		// do something with every new connection
+		fmt.Println("New connection created")
+		return nil
+	}
+
+	pool, err := pgxpool.NewWithConfig(context.Background(), config)
+	if err != nil {
+		return nil, err
+	}
+
+	db := stdlib.OpenDBFromPool(pool)
+
+	// db, err := sql.Open("pgx", dataSourceName)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// Check if the database connection is working.
 	err = db.Ping()

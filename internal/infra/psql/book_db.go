@@ -7,7 +7,6 @@ import (
 
 	"github.com/agmmtoo/lib-manage/internal/core/book"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
-	"github.com/lib/pq"
 )
 
 func (l *LibraryAppDB) ListBooks(ctx context.Context, input book.ListRequest) (*book.ListResponse, error) {
@@ -17,7 +16,7 @@ func (l *LibraryAppDB) ListBooks(ctx context.Context, input book.ListRequest) (*
 		ParamCounter: 1,
 	}
 	if len(input.IDs) > 0 {
-		qb.AddClause("id = ANY($%d)", pq.Array(input.IDs))
+		qb.AddClause("id = ANY($%d)", input.IDs)
 	}
 	if len(input.Title) > 0 {
 		qb.AddClause("title ILIKE $%d", fmt.Sprintf("%%%s%%", input.Title))

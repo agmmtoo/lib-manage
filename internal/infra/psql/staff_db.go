@@ -7,7 +7,6 @@ import (
 
 	"github.com/agmmtoo/lib-manage/internal/core/staff"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
-	"github.com/lib/pq"
 )
 
 func (l *LibraryAppDB) ListStaffs(ctx context.Context, input staff.ListRequest) (*staff.ListResponse, error) {
@@ -16,10 +15,10 @@ func (l *LibraryAppDB) ListStaffs(ctx context.Context, input staff.ListRequest) 
 		ParamCounter: 1,
 	}
 	if len(input.IDs) > 0 {
-		qb.AddClause("id = ANY($%d)", pq.Array(input.IDs))
+		qb.AddClause("id = ANY($%d)", input.IDs)
 	}
 	if len(input.UserIDs) > 0 {
-		qb.AddClause("id = ANY($%d)", pq.Array(input.UserIDs))
+		qb.AddClause("id = ANY($%d)", input.UserIDs)
 	}
 	qb.SetLimit(input.Limit)
 	qb.SetOffset(input.Offset)

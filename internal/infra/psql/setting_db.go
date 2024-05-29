@@ -7,7 +7,6 @@ import (
 
 	"github.com/agmmtoo/lib-manage/internal/core/setting"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
-	"github.com/lib/pq"
 )
 
 func (l *LibraryAppDB) GetSettingValue(ctx context.Context, libraryID int, key string) (string, error) {
@@ -35,13 +34,13 @@ func (l *LibraryAppDB) ListSettings(ctx context.Context, input setting.ListReque
 		ParamCounter: 1,
 	}
 	if len(input.IDs) > 0 {
-		qb.AddClause("id = ANY($%d)", pq.Array(input.IDs))
+		qb.AddClause("id = ANY($%d)", input.IDs)
 	}
 	if len(input.Key) > 0 {
 		qb.AddClause("key ILIKE $%d", fmt.Sprintf("%%%s%%", input.Key))
 	}
 	if len(input.LibraryIDs) > 0 {
-		qb.AddClause("library_id = ANY($%d)", pq.Array(input.LibraryIDs))
+		qb.AddClause("library_id = ANY($%d)", input.LibraryIDs)
 	}
 	qb.SetLimit(input.Limit)
 	qb.SetOffset(input.Offset)

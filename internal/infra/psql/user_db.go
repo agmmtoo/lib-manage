@@ -8,7 +8,6 @@ import (
 
 	"github.com/agmmtoo/lib-manage/internal/core/user"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
-	"github.com/lib/pq"
 )
 
 func (l *LibraryAppDB) ListUsers(ctx context.Context, input user.ListRequest) (*user.ListResponse, error) {
@@ -18,7 +17,7 @@ func (l *LibraryAppDB) ListUsers(ctx context.Context, input user.ListRequest) (*
 		Cols:         []string{"id", "username", "created_at", "updated_at", "deleted_at"},
 	}
 	if len(input.IDs) > 0 {
-		qb.AddClause("id = ANY($%d)", pq.Array(input.IDs))
+		qb.AddClause("id = ANY($%d)", input.IDs)
 	}
 	if len(input.Username) > 0 {
 		qb.AddClause("username ILIKE $%d", fmt.Sprintf("%%%s%%", input.Username))

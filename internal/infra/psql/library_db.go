@@ -9,7 +9,7 @@ import (
 	"github.com/agmmtoo/lib-manage/internal/core/library"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (l *LibraryAppDB) ListLibraries(ctx context.Context, input library.ListRequest) (*library.ListResponse, error) {
@@ -20,7 +20,7 @@ func (l *LibraryAppDB) ListLibraries(ctx context.Context, input library.ListRequ
 		ParamCounter: 1,
 	}
 	if len(input.IDs) > 0 {
-		qb.AddClause("id = ANY($%d)", pq.Array(input.IDs))
+		qb.AddClause("id = ANY($%d)", input.IDs)
 	}
 	if len(input.Name) > 0 {
 		qb.AddClause("name ILIKE $%d", fmt.Sprintf("%%%s%%", input.Name))
@@ -171,15 +171,15 @@ func (l *LibraryAppDB) CreateLibraryBookBatch(ctx context.Context, input []libra
 
 	rows, err := l.db.QueryContext(ctx, q, vals...)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Constraint == "library_book_pkey" {
-				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBDuplicate, pqErr.Detail, err)
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			if pgErr.ConstraintName == "library_book_pkey" {
+				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBDuplicate, pgErr.Detail, err)
 			}
-			if pqErr.Constraint == "library_book_book_id_fkey" {
-				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, pqErr.Detail, err)
+			if pgErr.ConstraintName == "library_book_book_id_fkey" {
+				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, pgErr.Detail, err)
 			}
-			if pqErr.Constraint == "library_book_library_id_fkey" {
-				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, pqErr.Detail, err)
+			if pgErr.ConstraintName == "library_book_library_id_fkey" {
+				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, pgErr.Detail, err)
 			}
 		}
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBExec, "error creating library book batch", err)
