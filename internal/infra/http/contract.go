@@ -123,6 +123,11 @@ type Loan struct {
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`
 	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
+
+	User    *User    `json:"user,omitempty"`
+	Book    *Book    `json:"book,omitempty"`
+	Staff   *Staff   `json:"staff,omitempty"`
+	Library *Library `json:"library,omitempty"`
 }
 
 type ListLoansRequest struct {
@@ -135,6 +140,11 @@ type ListLoansRequest struct {
 	LibraryIDs []int
 	StaffIDs   []int
 	DueDate    time.Time
+
+	IncludeUser    bool
+	IncludeBook    bool
+	IncludeStaff   bool
+	IncludeLibrary bool
 }
 
 type ListLoansResponse = ListResponse[Loan]

@@ -7,6 +7,7 @@ import (
 
 type QueryBuilder struct {
 	Table        string
+	JoinTables   []string
 	Clauses      []string
 	Params       []interface{}
 	Limit        int
@@ -37,7 +38,7 @@ func (qb *QueryBuilder) Build() (string, []interface{}) {
 	if len(qb.Cols) > 0 {
 		fields = strings.Join(qb.Cols, ", ")
 	}
-	query := fmt.Sprintf("SELECT %s FROM %s", fields, qb.Table)
+	query := fmt.Sprintf("SELECT %s FROM %s %s", fields, qb.Table, strings.Join(qb.JoinTables, " "))
 
 	if len(qb.Clauses) > 0 {
 		query += " WHERE " + strings.Join(qb.Clauses, " AND ")

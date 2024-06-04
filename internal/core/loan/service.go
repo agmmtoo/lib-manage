@@ -20,14 +20,18 @@ func New(repo Storer) *Service {
 
 func (s *Service) List(ctx context.Context, input http.ListLoansRequest) (*http.ListLoansResponse, error) {
 	result, err := s.repo.ListLoans(ctx, ListRequest{
-		IDs:        input.IDs,
-		Limit:      input.Limit,
-		Offset:     input.Skip,
-		Active:     input.Active,
-		UserIDs:    input.UserIDs,
-		BookIDs:    input.BookIDs,
-		LibraryIDs: input.LibraryIDs,
-		StaffIDs:   input.StaffIDs,
+		IDs:            input.IDs,
+		Limit:          input.Limit,
+		Offset:         input.Skip,
+		Active:         input.Active,
+		UserIDs:        input.UserIDs,
+		BookIDs:        input.BookIDs,
+		LibraryIDs:     input.LibraryIDs,
+		StaffIDs:       input.StaffIDs,
+		IncludeUser:    input.IncludeUser,
+		IncludeBook:    input.IncludeBook,
+		IncludeLibrary: input.IncludeLibrary,
+		IncludeStaff:   input.IncludeStaff,
 	})
 	if err != nil {
 		return nil, err
@@ -46,6 +50,39 @@ func (s *Service) List(ctx context.Context, input http.ListLoansRequest) (*http.
 			CreatedAt:  l.CreatedAt,
 			UpdatedAt:  l.UpdatedAt,
 			DeletedAt:  l.DeletedAt,
+			// FIXME: nil pointer dereference
+			User: &http.User{
+				ID:        l.User.ID,
+				Username:  l.User.Username,
+				CreatedAt: l.User.CreatedAt,
+				UpdatedAt: l.User.UpdatedAt,
+				DeletedAt: l.User.DeletedAt,
+			},
+			// FIXME: nil pointer dereference
+			Book: &http.Book{
+				ID:        l.Book.ID,
+				Title:     l.Book.Title,
+				Author:    l.Book.Author,
+				CreatedAt: l.Book.CreatedAt,
+				UpdatedAt: l.Book.UpdatedAt,
+				DeletedAt: l.Book.DeletedAt,
+			},
+			// FIXME: nil pointer dereference
+			Staff: &http.Staff{
+				ID:        l.Staff.ID,
+				UserID:    l.Staff.UserID,
+				CreatedAt: l.Staff.CreatedAt,
+				UpdatedAt: l.Staff.UpdatedAt,
+				DeletedAt: l.Staff.DeletedAt,
+			},
+			// FIXME: nil pointer dereference
+			Library: &http.Library{
+				ID:        l.Library.ID,
+				Name:      l.Library.Name,
+				CreatedAt: l.Library.CreatedAt,
+				UpdatedAt: l.Library.UpdatedAt,
+				DeletedAt: l.Library.DeletedAt,
+			},
 		})
 	}
 
@@ -162,6 +199,11 @@ type ListRequest struct {
 	StaffIDs   []int
 	Limit      int
 	Offset     int
+
+	IncludeUser    bool
+	IncludeBook    bool
+	IncludeStaff   bool
+	IncludeLibrary bool
 }
 
 type ListResponse struct {

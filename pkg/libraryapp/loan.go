@@ -18,4 +18,9 @@ type Loan struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time
+
+	User    *User
+	Book    *Book
+	Staff   *Staff
+	Library *Library
 }
