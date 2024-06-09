@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,6 +15,8 @@ import (
 	userService "github.com/agmmtoo/lib-manage/internal/core/user"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
 	"github.com/agmmtoo/lib-manage/internal/infra/psql"
+	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
+	"github.com/joho/godotenv"
 	// "github.com/agmmtoo/lib-manage/internal/infra/slog"
 )
 
@@ -21,7 +24,12 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 
-	db, err := psql.NewLibraryAppDB("postgres://liber:liber@localhost:5432/libraryapp?sslmode=disable")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	db, err := psql.NewLibraryAppDB(os.Getenv(config.ENV_KEY_DB_URL))
 	if err != nil {
 		panic(err)
 	}
