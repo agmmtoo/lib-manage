@@ -12,21 +12,28 @@ import (
 func (l *LibraryAppDB) ListBooks(ctx context.Context, input book.ListRequest) (*book.ListResponse, error) {
 
 	qb := &QueryBuilder{
-		Table:        "book",
+		Table:        "book b",
 		ParamCounter: 1,
+		Cols:         []string{"b.id", "b.title", "b.author", "b.created_at", "b.updated_at", "b.deleted_at"},
 	}
 	if len(input.IDs) > 0 {
-		qb.AddClause("id = ANY($%d)", input.IDs)
+		qb.AddClause("b.id = ANY($%d)", input.IDs)
 	}
 	if len(input.Title) > 0 {
-		qb.AddClause("title ILIKE $%d", fmt.Sprintf("%%%s%%", input.Title))
+		qb.AddClause("b.title ILIKE $%d", fmt.Sprintf("%%%s%%", input.Title))
 	}
 	if len(input.Author) > 0 {
-		qb.AddClause("author ILIKE $%d", fmt.Sprintf("%%%s%%", input.Author))
+		qb.AddClause("b.author ILIKE $%d", fmt.Sprintf("%%%s%%", input.Author))
 	}
-	qb.AddClause("deleted_at IS NULL")
+	qb.AddClause("b.deleted_at IS NULL")
 	qb.SetLimit(input.Limit)
 	qb.SetOffset(input.Offset)
+
+	// FIXME: duplicate records on multiple IDs
+	if len(input.LibraryIDs) > 0 {
+		qb.JoinTables = append(qb.JoinTables, "JOIN library_book lb ON b.id = lb.book_id")
+		qb.AddClause("lb.library_id = ANY($%d)", input.LibraryIDs)
+	}
 
 	q, args := qb.Build()
 	rows, err := l.db.QueryContext(ctx, q, args...)

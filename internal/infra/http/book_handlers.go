@@ -36,12 +36,24 @@ func (h *LibraryAppHandler) ListBooks(w http.ResponseWriter, r *http.Request) er
 	var title = r.URL.Query().Get("title")
 	var author = r.URL.Query().Get("author")
 
+	var libraryIDs []int
+	if qIDs := r.URL.Query().Get("library_ids"); qIDs != "" {
+		for _, id := range strings.Split(qIDs, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return InvalidRequestData(map[string]string{"library_ids": "invalid"})
+			}
+			libraryIDs = append(libraryIDs, i)
+		}
+	}
+
 	books, err := h.service.ListBooks(r.Context(), ListBooksRequest{
-		IDs:    ids,
-		Title:  title,
-		Author: author,
-		Limit:  limit,
-		Skip:   skip,
+		IDs:        ids,
+		LibraryIDs: libraryIDs,
+		Title:      title,
+		Author:     author,
+		Limit:      limit,
+		Skip:       skip,
 	})
 	if err != nil {
 		return err

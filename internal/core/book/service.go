@@ -17,11 +17,12 @@ func New(repo Storer) *Service {
 
 func (s *Service) List(ctx context.Context, input http.ListBooksRequest) (*http.ListBooksResponse, error) {
 	result, err := s.repo.ListBooks(ctx, ListRequest{
-		IDs:    input.IDs,
-		Title:  input.Title,
-		Author: input.Author,
-		Limit:  input.Limit,
-		Offset: input.Skip,
+		IDs:        input.IDs,
+		Title:      input.Title,
+		Author:     input.Author,
+		Limit:      input.Limit,
+		Offset:     input.Skip,
+		LibraryIDs: input.LibraryIDs,
 	})
 	if err != nil {
 		return nil, err
@@ -85,11 +86,12 @@ type Storer interface {
 }
 
 type ListRequest struct {
-	IDs    []int
-	Title  string
-	Author string
-	Limit  int
-	Offset int
+	IDs        []int
+	Title      string
+	Author     string
+	Limit      int
+	Offset     int
+	LibraryIDs []int
 }
 
 type ListResponse struct {

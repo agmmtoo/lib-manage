@@ -40,15 +40,27 @@ func (h *LibraryAppHandler) ListStaffs(w http.ResponseWriter, r *http.Request) e
 			if err != nil {
 				return InvalidRequestData(map[string]string{"user_ids": "invalid"})
 			}
-			ids = append(ids, i)
+			userIDs = append(userIDs, i)
+		}
+	}
+
+	var libraryIDs []int
+	if lIDs := r.URL.Query().Get("library_ids"); lIDs != "" {
+		for _, id := range strings.Split(lIDs, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return InvalidRequestData(map[string]string{"library_ids": "invalid"})
+			}
+			libraryIDs = append(libraryIDs, i)
 		}
 	}
 
 	staffs, err := h.service.ListStaffs(r.Context(), ListStaffsRequest{
-		IDs:     ids,
-		UserIDs: userIDs,
-		Limit:   limit,
-		Skip:    skip,
+		IDs:        ids,
+		UserIDs:    userIDs,
+		Limit:      limit,
+		Skip:       skip,
+		LibraryIDs: libraryIDs,
 	})
 	if err != nil {
 		return err

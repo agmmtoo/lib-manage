@@ -11,14 +11,19 @@ import (
 
 func (l *LibraryAppDB) ListStaffs(ctx context.Context, input staff.ListRequest) (*staff.ListResponse, error) {
 	qb := &QueryBuilder{
-		Table:        "staff",
+		Table:        "staff s",
 		ParamCounter: 1,
+		Cols:         []string{"s.id", "s.user_id", "s.created_at", "s.updated_at", "s.deleted_at"},
 	}
 	if len(input.IDs) > 0 {
-		qb.AddClause("id = ANY($%d)", input.IDs)
+		qb.AddClause("s.id = ANY($%d)", input.IDs)
 	}
 	if len(input.UserIDs) > 0 {
-		qb.AddClause("id = ANY($%d)", input.UserIDs)
+		qb.AddClause("s.user_id = ANY($%d)", input.UserIDs)
+	}
+	if len(input.LibraryIDs) > 0 {
+		qb.JoinTables = append(qb.JoinTables, "JOIN library_staff ls ON s.id = ls.staff_id")
+		qb.AddClause("ls.library_id = ANY($%d)", input.LibraryIDs)
 	}
 	qb.SetLimit(input.Limit)
 	qb.SetOffset(input.Offset)

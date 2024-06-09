@@ -67,11 +67,12 @@ type CreateUserRequest struct {
 }
 
 type ListBooksRequest struct {
-	IDs    []int
-	Limit  int
-	Skip   int
-	Title  string
-	Author string
+	IDs        []int
+	Limit      int
+	Skip       int
+	Title      string
+	Author     string
+	LibraryIDs []int
 }
 
 type ListBooksResponse = ListResponse[Book]
@@ -168,10 +169,11 @@ type Staff struct {
 }
 
 type ListStaffsRequest struct {
-	IDs     []int
-	UserIDs []int
-	Limit   int
-	Skip    int
+	IDs        []int
+	UserIDs    []int
+	LibraryIDs []int
+	Limit      int
+	Skip       int
 }
 
 type ListStaffsResponse = ListResponse[Staff]
