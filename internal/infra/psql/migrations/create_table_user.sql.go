@@ -1,4 +1,6 @@
+package migrations
 
+const CreateTableUser = `
 CREATE TABLE IF NOT EXISTS "user" (
 	id SERIAL PRIMARY KEY,
 	username VARCHAR(255) NOT NULL UNIQUE,
@@ -12,3 +14,4 @@ CREATE OR REPLACE TRIGGER update_user_updated_at
 BEFORE UPDATE ON "user"
 FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at_column();
+`

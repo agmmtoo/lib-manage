@@ -1,4 +1,6 @@
+package migrations
 
+const CreateFunctionUpdateUpdatedAtColumn = `
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -6,3 +8,4 @@ BEGIN
     RETURN NEW;
 END;
 $$ language 'plpgsql';
+`

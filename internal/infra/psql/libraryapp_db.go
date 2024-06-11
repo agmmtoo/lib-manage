@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"os"
-	"path"
+	"strings"
 
+	"github.com/agmmtoo/lib-manage/internal/infra/psql/migrations"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -74,46 +74,24 @@ func (l *LibraryAppDB) Ping(ctx context.Context) error {
 func (l *LibraryAppDB) Migrate() error {
 
 	// NOTE: dependency for table creations
-	fq, err := getSQLFileContent("create_function_update_updated_at_column.sql")
+	logger.Info("Migrating the database")
+	_, err := l.db.Exec(migrations.CreateFunctionUpdateUpdatedAtColumn)
 	if err != nil {
 		return err
 	}
-	_, err = l.db.Exec(fq)
-	if err != nil {
-		return err
-	}
 
-	migrationFiles := []string{
-		"create_table_book.sql",
-		"create_table_user.sql",
-		"create_table_library.sql",
-		"create_table_staff.sql",
-		"create_table_library_book.sql",
-		"create_table_library_staff.sql",
-		"create_table_loan.sql",
-		"create_table_setting.sql",
-	}
-
-	var tq string
-
-	for _, file := range migrationFiles {
-		s, err := getSQLFileContent(file)
-		if err != nil {
-			return err
-		}
-		tq += s
+	qs := []string{
+		migrations.CreateTableBook,
+		migrations.CreateTableUser,
+		migrations.CreateTableLibrary,
+		migrations.CreateTableStaff,
+		migrations.CreateTableLibraryBook,
+		migrations.CreateTableLibraryStaff,
+		migrations.CreateTableLoan,
+		migrations.CreateTableSetting,
 	}
 
 	// execute the migration SQL
-	_, err = l.db.Exec(tq)
+	_, err = l.db.Exec(strings.Join(qs, "\n"))
 	return err
-}
-
-func getSQLFileContent(file string) (string, error) {
-	migrationPath := "internal/infra/psql/migrations"
-	b, err := os.ReadFile(path.Join(migrationPath, file))
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
 }

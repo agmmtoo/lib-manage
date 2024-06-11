@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -47,7 +48,8 @@ func main() {
 
 	service := libraryapp.New(user, book, library, loan, staff, setting)
 
-	server, err := http.NewServer(":8080", service)
+	port := fmt.Sprintf(":%s", os.Getenv(config.ENV_KEY_PORT))
+	server, err := http.NewServer(port, service)
 
 	if err != nil {
 		panic(err)

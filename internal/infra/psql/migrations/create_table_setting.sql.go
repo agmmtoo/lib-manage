@@ -1,3 +1,6 @@
+package migrations
+
+const CreateTableSetting = `
 CREATE TABLE IF NOT EXISTS setting (
     id SERIAL PRIMARY KEY,
     library_id INT NOT NULL REFERENCES library(id),
@@ -13,3 +16,4 @@ CREATE OR REPLACE TRIGGER update_setting_updated_at
 BEFORE UPDATE ON setting
 FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at_column();
+`

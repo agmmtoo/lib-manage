@@ -1,4 +1,6 @@
+package migrations
 
+const CreateTableStaff = `
 CREATE TABLE IF NOT EXISTS staff (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL UNIQUE REFERENCES "user"(id),
@@ -15,3 +17,4 @@ EXECUTE PROCEDURE update_updated_at_column();
 -- ALTER TABLE staff
 -- ADD CONSTRAINT fk_staff_users
 -- FOREIGN KEY (user_id) REFERENCES users(id);
+`

@@ -1,4 +1,6 @@
+package migrations
 
+const CreateTableLibrary = `
 CREATE TABLE IF NOT EXISTS library (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -11,3 +13,4 @@ CREATE OR REPLACE TRIGGER update_library_updated_at
 BEFORE UPDATE ON library
 FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at_column();
+`

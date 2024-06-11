@@ -18,6 +18,7 @@ const (
 
 // environment variable keys
 const (
+	ENV_KEY_PORT    = "PORT"
 	ENV_KEY_DB_URL  = "DB_URL"
 	ENV_KEY_APP_ENV = "APP_ENV"
 )

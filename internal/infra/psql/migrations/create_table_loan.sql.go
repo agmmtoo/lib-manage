@@ -1,4 +1,6 @@
+package migrations
 
+const CreateTableLoan = `
 CREATE TABLE IF NOT EXISTS loan (
     id SERIAL PRIMARY KEY,
     book_id INT NOT NULL,
@@ -55,4 +57,4 @@ EXECUTE PROCEDURE update_updated_at_column();
 -- $$ LANGUAGE plpgsql;
 
 -- SELECT can_borrow_book(123, 1); -- Returns true or false
-
+`

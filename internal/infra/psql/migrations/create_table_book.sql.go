@@ -1,4 +1,6 @@
+package migrations
 
+const CreateTableBook = `
 CREATE TABLE IF NOT EXISTS book (
     id SERIAL PRIMARY KEY,
     title VARCHAR(225) NOT NULL,
@@ -12,3 +14,4 @@ CREATE OR REPLACE TRIGGER update_book_updated_at
 BEFORE UPDATE ON book
 FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at_column();
+`
