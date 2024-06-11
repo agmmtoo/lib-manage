@@ -26,7 +26,7 @@ func main() {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Error loading .env file")
 	}
 
 	db, err := psql.NewLibraryAppDB(os.Getenv(config.ENV_KEY_DB_URL))
