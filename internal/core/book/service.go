@@ -79,10 +79,15 @@ func (s *Service) Create(ctx context.Context, input http.CreateBookRequest) (*ht
 	}, nil
 }
 
+func (s *Service) Count(ctx context.Context) (int, error) {
+	return s.repo.CountBooks(ctx)
+}
+
 type Storer interface {
 	ListBooks(ctx context.Context, input ListRequest) (*ListResponse, error)
 	GetBookByID(ctx context.Context, id int) (*libraryapp.Book, error)
 	CreateBook(ctx context.Context, input CreateRequest) (*libraryapp.Book, error)
+	CountBooks(ctx context.Context) (int, error)
 }
 
 type ListRequest struct {

@@ -38,5 +38,7 @@ func (s *Server) registerRoutes(
 	mux.HandleFunc("GET /api/v1/libraries/{id}/settings", MakeHandler(handler.ListLibrarySettings))
 	mux.HandleFunc("PATCH /api/v1/libraries/{id}/settings", MakeHandler(handler.UpdateLibrarySettings))
 
+	mux.HandleFunc("GET /api/v1/public", MakeHandler(handler.GetStats))
+
 	return mux
 }

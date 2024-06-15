@@ -36,6 +36,7 @@ type Servicer interface {
 	// GetUsersByBookName(ctx context.Context, name string) ([]*libraryapp.User, error)
 
 	Ping(ctx context.Context) (string, error)
+	GetStats(ctx context.Context) (*Stats, error)
 }
 
 type ListResponse[T any] struct {
@@ -235,4 +236,11 @@ type ListSettingsResponse = ListResponse[Setting]
 type UpdateSettingsRequest = []struct {
 	ID    int    `json:"id"`
 	Value string `json:"value"`
+}
+
+type Stats struct {
+	Books     int `json:"books"`
+	Libraries int `json:"libraries"`
+	Users     int `json:"users"`
+	Staffs    int `json:"staffs"`
 }

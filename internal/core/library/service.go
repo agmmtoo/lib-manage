@@ -122,6 +122,10 @@ func (s *Service) RegisterBookBatch(ctx context.Context, input http.RegisterLibr
 	}, nil
 }
 
+func (s *Service) Count(ctx context.Context) (int, error) {
+	return s.repo.CountLibraries(ctx)
+}
+
 type Storer interface {
 	ListLibraries(ctx context.Context, input ListRequest) (*ListResponse, error)
 	GetLibraryByID(ctx context.Context, id int) (*libraryapp.Library, error)
@@ -129,6 +133,7 @@ type Storer interface {
 	CreateLibraryStaff(ctx context.Context, input CreateLibraryStaffRequest) (*libraryapp.LibraryStaff, error)
 	CreateLibraryBook(ctx context.Context, input CreateLibraryBookRequest) (*libraryapp.LibraryBook, error)
 	CreateLibraryBookBatch(ctx context.Context, input []libraryapp.LibraryBook, opt CreateBatchOpt) (*CreateBatchResponse, error)
+	CountLibraries(ctx context.Context) (int, error)
 }
 
 type ListRequest struct {

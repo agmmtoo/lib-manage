@@ -86,12 +86,17 @@ func (s *Service) Create(ctx context.Context, input http.CreateUserRequest) (*ht
 	}, nil
 }
 
+func (s *Service) Count(ctx context.Context) (int, error) {
+	return s.repo.CountUsers(ctx)
+}
+
 // Storer provides access to the user storage
 // Implemented by the database layer, `internal/infra/psql`
 type Storer interface {
 	ListUsers(ctx context.Context, input ListRequest) (*ListResponse, error)
 	GetUserByID(ctx context.Context, id int) (*libraryapp.User, error)
 	CreateUser(ctx context.Context, input CreateRequest) (*libraryapp.User, error)
+	CountUsers(ctx context.Context) (int, error)
 }
 
 type ListRequest struct {

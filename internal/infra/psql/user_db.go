@@ -87,3 +87,11 @@ func (l *LibraryAppDB) CreateUser(ctx context.Context, input user.CreateRequest)
 
 	return &u, nil
 }
+
+func (l *LibraryAppDB) CountUsers(ctx context.Context) (int, error) {
+	var count int
+	q := "SELECT count(id) from \"user\";"
+	row := l.db.QueryRowContext(ctx, q)
+	err := row.Scan(&count)
+	return count, err
+}

@@ -126,6 +126,20 @@ func (s *Service) UpdateLibrarySettings(ctx context.Context, input http.UpdateSe
 	return s.setting.Update(ctx, input)
 }
 
+func (s *Service) GetStats(ctx context.Context) (*http.Stats, error) {
+	b, _ := s.book.Count(ctx)
+	l, _ := s.library.Count(ctx)
+	u, _ := s.user.Count(ctx)
+	st, _ := s.staff.Count(ctx)
+
+	return &http.Stats{
+		Books:     b,
+		Libraries: l,
+		Users:     u,
+		Staffs:    st,
+	}, nil
+}
+
 // func (s *Service) GetUsersByBookName(ctx context.Context, name string) ([]*libraryapp.User, error) {
 // 	books, err := s.bookService.GetList(ctx, BookGetListInput{
 // 		Name: name,

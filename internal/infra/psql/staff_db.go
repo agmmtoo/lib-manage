@@ -93,3 +93,11 @@ func (l *LibraryAppDB) CreateStaff(ctx context.Context, input staff.CreateReques
 
 	return &s, nil
 }
+
+func (l *LibraryAppDB) CountStaffs(ctx context.Context) (int, error) {
+	var count int
+	q := "SELECT count(id) from staff;"
+	row := l.db.QueryRowContext(ctx, q)
+	err := row.Scan(&count)
+	return count, err
+}

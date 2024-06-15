@@ -93,3 +93,11 @@ func (l *LibraryAppDB) CreateBook(ctx context.Context, input book.CreateRequest)
 	}
 	return &b, nil
 }
+
+func (l *LibraryAppDB) CountBooks(ctx context.Context) (int, error) {
+	var count int
+	q := "SELECT count(id) from book;"
+	row := l.db.QueryRowContext(ctx, q)
+	err := row.Scan(&count)
+	return count, err
+}

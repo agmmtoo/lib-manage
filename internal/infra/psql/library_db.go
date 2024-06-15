@@ -200,3 +200,11 @@ func (l *LibraryAppDB) CreateLibraryBookBatch(ctx context.Context, input []libra
 		SuccessBookIDs: successBookIDs,
 	}, nil
 }
+
+func (l *LibraryAppDB) CountLibraries(ctx context.Context) (int, error) {
+	var count int
+	q := "SELECT count(id) from library;"
+	row := l.db.QueryRowContext(ctx, q)
+	err := row.Scan(&count)
+	return count, err
+}
