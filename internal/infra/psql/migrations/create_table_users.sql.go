@@ -1,7 +1,7 @@
 package migrations
 
-const CreateTableUser = `
-CREATE TABLE IF NOT EXISTS "user" (
+const CreateTableUsers = `
+CREATE TABLE IF NOT EXISTS users (
 	id SERIAL PRIMARY KEY,
 	username VARCHAR(255) NOT NULL UNIQUE,
 	password VARCHAR(255) NOT NULL,
@@ -9,9 +9,4 @@ CREATE TABLE IF NOT EXISTS "user" (
 	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	deleted_at TIMESTAMP
 );
-
-CREATE OR REPLACE TRIGGER update_user_updated_at
-BEFORE UPDATE ON "user"
-FOR EACH ROW
-EXECUTE PROCEDURE update_updated_at_column();
 `

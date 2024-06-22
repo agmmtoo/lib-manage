@@ -1,16 +1,11 @@
 package migrations
 
-const CreateTableLibrary = `
-CREATE TABLE IF NOT EXISTS library (
+const CreateTableLibraries = `
+CREATE TABLE IF NOT EXISTS libraries (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	deleted_at TIMESTAMP
 );
-
-CREATE OR REPLACE TRIGGER update_library_updated_at
-BEFORE UPDATE ON library
-FOR EACH ROW
-EXECUTE PROCEDURE update_updated_at_column();
 `
