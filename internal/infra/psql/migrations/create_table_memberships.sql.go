@@ -1,17 +1,5 @@
 package migrations
 
-const CreateTableUsersMemberships = `
-CREATE TABLE IF NOT EXISTS users_memberships (
-	id SERIAL PRIMARY KEY,
-	user_id INT NOT NULL REFERENCES users(id),
-	membership_id INT NOT NULL REFERENCES memberships(id),
-	-- since membership can be edited, we need to store the expiry date
-	expiry_date TIMESTAMP NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
-);
-`
 const CreateTableMemberships = `
 CREATE TABLE IF NOT EXISTS memberships (
 	id SERIAL PRIMARY KEY,
@@ -23,5 +11,19 @@ CREATE TABLE IF NOT EXISTS memberships (
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	deleted_at TIMESTAMP
+);
+`
+
+const CreateTableUsersMemberships = `
+CREATE TABLE IF NOT EXISTS users_memberships (
+	id SERIAL PRIMARY KEY,
+	user_id INT NOT NULL REFERENCES users(id),
+	membership_id INT NOT NULL REFERENCES memberships(id),
+	-- since membership can be edited, we need to store the expiry date
+	expiry_date TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP,
+	UNIQUE (user_id, membership_id)
 );
 `

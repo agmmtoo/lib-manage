@@ -35,11 +35,33 @@ CREATE TABLE IF NOT EXISTS loans (
     return_date TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 
 -- Add a partial unique index to enforce the constraint
 CREATE UNIQUE INDEX IF NOT EXISTS loan_unique_active
-ON loan library_book_id
+ON loans (library_book_id)
 WHERE return_date IS NULL;
+`
+
+// not used
+const CreateTriggerLoans = `
+CREATE FUNCTION check_library_ids_match() RETURNS TRIGGER AS $$
+BEGIN
+    IF (
+        (SELECT library_id FROM libraries_books WHERE id = NEW.library_book_id) <> 
+        (SELECT library_id FROM users_memberships WHERE id = NEW.user_membership_id) OR
+        (SELECT library_id FROM libraries_books WHERE id = NEW.library_book_id) <> 
+        (SELECT library_id FROM staffs WHERE id = NEW.staff_id)
+    ) THEN
+        RAISE EXCEPTION 'Library IDs do not match';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER ensure_library_id_match
+BEFORE INSERT ON loans
+FOR EACH ROW
+EXECUTE FUNCTION check_library_ids_match();
 `
