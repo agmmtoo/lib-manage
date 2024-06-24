@@ -3,6 +3,8 @@ package http
 import (
 	"context"
 	"time"
+
+	"github.com/agmmtoo/lib-manage/internal/infra/http/models"
 )
 
 // Servicer is implemented by core/service.
@@ -76,7 +78,7 @@ type ListBooksRequest struct {
 	LibraryIDs []int
 }
 
-type ListBooksResponse = ListResponse[Book]
+type ListBooksResponse = ListResponse[models.LibraryBook]
 
 type Book struct {
 	ID        int        `json:"id"`

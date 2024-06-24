@@ -6,18 +6,26 @@ import (
 	"fmt"
 
 	"github.com/agmmtoo/lib-manage/internal/core/book"
+	cm "github.com/agmmtoo/lib-manage/internal/core/models"
+	"github.com/agmmtoo/lib-manage/internal/infra/psql/models"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
 func (l *LibraryAppDB) ListBooks(ctx context.Context, input book.ListRequest) (*book.ListResponse, error) {
 
 	qb := &QueryBuilder{
-		Table:        "book b",
+		Table:        "libraries_books lb",
 		ParamCounter: 1,
-		Cols:         []string{"b.id", "b.title", "b.author", "b.created_at", "b.updated_at", "b.deleted_at"},
+		Cols: []string{
+			"lb.id", "lb.code", "lb.library_id", "lb.book_id", "lb.created_at", "lb.updated_at", "lb.deleted_at",
+			"l.id", "l.name",
+			"b.id", "b.title", "b.author", "b.sub_category_id",
+			"sc.id", "sc.category_id", "sc.name",
+			"c.id", "c.name",
+		},
 	}
 	if len(input.IDs) > 0 {
-		qb.AddClause("b.id = ANY($%d)", input.IDs)
+		qb.AddClause("lb.id = ANY($%d)", input.IDs)
 	}
 	if len(input.Title) > 0 {
 		qb.AddClause("b.title ILIKE $%d", fmt.Sprintf("%%%s%%", input.Title))
@@ -25,13 +33,24 @@ func (l *LibraryAppDB) ListBooks(ctx context.Context, input book.ListRequest) (*
 	if len(input.Author) > 0 {
 		qb.AddClause("b.author ILIKE $%d", fmt.Sprintf("%%%s%%", input.Author))
 	}
+
+	// Join with "libraries"
+	qb.JoinTables = append(qb.JoinTables, "JOIN libraries l ON lb.library_id = l.id")
+
+	// Join with "books"
+	qb.JoinTables = append(qb.JoinTables, "JOIN books b ON lb.book_id = b.id")
+
+	// Join with "sub_categories"
+	qb.JoinTables = append(qb.JoinTables, "LEFT JOIN sub_categories sc ON b.sub_category_id = sc.id")
+
+	// Join with "categories"
+	qb.JoinTables = append(qb.JoinTables, "LEFT JOIN categories c ON sc.category_id = c.id")
+
 	qb.AddClause("b.deleted_at IS NULL")
 	qb.SetLimit(input.Limit)
 	qb.SetOffset(input.Offset)
 
-	// FIXME: duplicate records on multiple IDs
 	if len(input.LibraryIDs) > 0 {
-		qb.JoinTables = append(qb.JoinTables, "JOIN library_book lb ON b.id = lb.book_id")
 		qb.AddClause("lb.library_id = ANY($%d)", input.LibraryIDs)
 	}
 
@@ -43,22 +62,40 @@ func (l *LibraryAppDB) ListBooks(ctx context.Context, input book.ListRequest) (*
 
 	defer rows.Close()
 
-	var books []*libraryapp.Book
+	var books []*cm.LibraryBook
+
 	for rows.Next() {
-		var b libraryapp.Book
-		err := rows.Scan(&b.ID, &b.Title, &b.Author, &b.CreatedAt, &b.UpdatedAt, &b.DeletedAt)
+		var b models.LibraryBook
+		err := rows.Scan(
+			&b.ID, &b.Code, &b.LibraryID, &b.BookID, &b.CreatedAt, &b.UpdatedAt, &b.DeletedAt,
+			&b.LibraryID, &b.LibraryName,
+			&b.BookID, &b.BookTitle, &b.BookAuthor, &b.BookSubCategoryID,
+			&b.BookSubCategoryID, &b.BookSubCategoryCategoryID, &b.BookSubCategoryName,
+			&b.BookSubCategoryCategoryID, &b.BookSubCategoryCategoryName,
+		)
 		if err != nil {
 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning book", err)
 		}
-		books = append(books, &b)
+
+		books = append(books, b.ToCoreModel())
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing books", err)
 	}
 
+	var count int
+	// TODO: implement count query
+	// qc, p := qb.BuildCount()
+	// row := l.db.QueryRowContext(ctx, qc, p)
+	// err = row.Scan(&count)
+	// if err != nil {
+	// 	fmt.Printf("Count scan error: %v\n", err)
+	// }
+
 	return &book.ListResponse{
 		Books: books,
+		Total: count,
 	}, nil
 }
 

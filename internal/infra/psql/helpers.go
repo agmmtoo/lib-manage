@@ -52,7 +52,21 @@ func (qb *QueryBuilder) Build() (string, []interface{}) {
 		qb.Params = append(qb.Params, qb.Offset)
 	}
 
-	fmt.Println("QueryBuilder: ", query, qb.Params)
+	fmt.Printf("Query:\t%s\t%v\n", query, qb.Params)
 
 	return query, qb.Params
 }
+
+// TODO: Implement the BuildCount method
+// func (qb *QueryBuilder) BuildCount() (string, []interface{}) {
+// 	q, p := qb.Build()
+// 	selectIndex := strings.Index(q, "SELECT")
+// 	fromIndex := strings.Index(q, "FROM")
+// 	// my query always has "LIMIT", discard it and remaining
+// 	limitIndex := strings.Index(q, "LIMIT")
+// 	query := q[:selectIndex+6] + " COUNT(*) " + q[fromIndex:limitIndex]
+
+// 	fmt.Printf("Count:\t%s\t%v\n", query, p)
+
+// 	return query, p
+// }

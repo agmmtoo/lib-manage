@@ -3,7 +3,9 @@ package book
 import (
 	"context"
 
+	"github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
+	am "github.com/agmmtoo/lib-manage/internal/infra/http/models"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
@@ -28,16 +30,9 @@ func (s *Service) List(ctx context.Context, input http.ListBooksRequest) (*http.
 		return nil, err
 	}
 
-	var books []*http.Book
+	var books []*am.LibraryBook
 	for _, b := range result.Books {
-		books = append(books, &http.Book{
-			ID:        b.ID,
-			Title:     b.Title,
-			Author:    b.Author,
-			CreatedAt: b.CreatedAt,
-			UpdatedAt: b.UpdatedAt,
-			DeletedAt: b.DeletedAt,
-		})
+		books = append(books, b.ToAPIModel())
 	}
 
 	return &http.ListBooksResponse{
@@ -100,7 +95,7 @@ type ListRequest struct {
 }
 
 type ListResponse struct {
-	Books []*libraryapp.Book
+	Books []*models.LibraryBook
 	Total int
 }
 

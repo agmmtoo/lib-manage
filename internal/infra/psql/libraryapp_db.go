@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/agmmtoo/lib-manage/internal/infra/psql/migrations"
 	"github.com/jackc/pgx/v5"
@@ -39,11 +38,6 @@ func NewLibraryAppDB(dataSourceName string) (*LibraryAppDB, error) {
 
 	db := stdlib.OpenDBFromPool(pool)
 
-	// db, err := sql.Open("pgx", dataSourceName)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	// Check if the database connection is working.
 	err = db.Ping()
 	if err != nil {
@@ -75,23 +69,40 @@ func (l *LibraryAppDB) Migrate() error {
 
 	// NOTE: dependency for table creations
 	logger.Info("Migrating the database")
-	_, err := l.db.Exec(migrations.CreateFunctionUpdateUpdatedAtColumn)
+	// _, err := l.db.Exec(migrations.CreateFunctionUpdateUpdatedAtColumn)
+	// if err != nil {
+	// 	return err
+	// }
+
+	qs := []string{
+		migrations.CreateTableUsers,
+		migrations.CreateTableLibraries,
+		migrations.CreateTableCategories,
+		migrations.CreateTableSubCategories,
+		migrations.CreateTableBooks,
+		migrations.CreateTableLibrariesBooks,
+		migrations.CreateTableStaffs,
+		migrations.CreateTableMemberships,
+		migrations.CreateTableUsersMemberships,
+		migrations.CreateTableLoans,
+		migrations.CreateTableSetting,
+	}
+	// execute the migration SQL
+	tx, err := l.db.BeginTx(context.Background(), &sql.TxOptions{})
 	if err != nil {
 		return err
 	}
-
-	qs := []string{
-		migrations.CreateTableBook,
-		migrations.CreateTableUser,
-		migrations.CreateTableLibrary,
-		migrations.CreateTableStaff,
-		migrations.CreateTableLibraryBook,
-		migrations.CreateTableLibraryStaff,
-		migrations.CreateTableLoan,
-		migrations.CreateTableSetting,
+	for _, q := range qs {
+		if _, err := tx.ExecContext(context.Background(), q); err != nil {
+			logger.Error("error executing migration", "error", err, "query", q)
+			tx.Rollback()
+			return err
+		}
 	}
-
-	// execute the migration SQL
-	_, err = l.db.Exec(strings.Join(qs, "\n"))
-	return err
+	if err := tx.Commit(); err != nil {
+		logger.Error("error committing migration", "error", err)
+		return err
+	}
+	logger.Info("Migration successful")
+	return nil
 }

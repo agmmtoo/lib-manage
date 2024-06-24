@@ -14,8 +14,3 @@ type Staff struct {
 	User    *PartialUser
 	Library *PartialLibrary
 }
-
-type PartialUser struct {
-	ID       int
-	Username string
-}
