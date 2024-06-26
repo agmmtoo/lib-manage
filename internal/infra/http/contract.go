@@ -35,6 +35,8 @@ type Servicer interface {
 	ListLibrarySettings(ctx context.Context, input ListSettingsRequest) (*ListSettingsResponse, error)
 	UpdateLibrarySettings(ctx context.Context, input UpdateSettingsRequest) ([]*Setting, error)
 
+	ListMemberships(ctx context.Context, input ListMembershipsRequest) (*ListMembershipsResponse, error)
+
 	// GetUsersByBookName(ctx context.Context, name string) ([]*libraryapp.User, error)
 
 	Ping(ctx context.Context) (string, error)
@@ -247,3 +249,16 @@ type Stats struct {
 	Users     int `json:"users"`
 	Staffs    int `json:"staffs"`
 }
+
+type ListMembershipsRequest struct {
+	IDs             []int  `json:"ids"`
+	LibraryIDs      []int  `json:"library_ids"`
+	Name            string `json:"name"`
+	DurationDays    *int   `json:"duration_days,omitempty"`
+	ActiveLoanLimit *int   `json:"active_loan_limit,omitempty"`
+	FinePerDay      *int   `json:"fine_per_day,omitempty"`
+	Skip            int    `json:"skip"`
+	Limit           int    `json:"limit"`
+}
+
+type ListMembershipsResponse = ListResponse[models.Membership]

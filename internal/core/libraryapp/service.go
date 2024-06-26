@@ -6,6 +6,7 @@ import (
 	"github.com/agmmtoo/lib-manage/internal/core/book"
 	"github.com/agmmtoo/lib-manage/internal/core/library"
 	"github.com/agmmtoo/lib-manage/internal/core/loan"
+	"github.com/agmmtoo/lib-manage/internal/core/membership"
 	"github.com/agmmtoo/lib-manage/internal/core/setting"
 	"github.com/agmmtoo/lib-manage/internal/core/staff"
 	"github.com/agmmtoo/lib-manage/internal/core/user"
@@ -16,12 +17,13 @@ import (
 // Service implements http Service interface
 // Service delegates the calls to underlying services
 type Service struct {
-	user    *user.Service
-	book    *book.Service
-	library *library.Service
-	loan    *loan.Service
-	staff   *staff.Service
-	setting *setting.Service
+	user       *user.Service
+	book       *book.Service
+	library    *library.Service
+	loan       *loan.Service
+	staff      *staff.Service
+	setting    *setting.Service
+	membership *membership.Service
 }
 
 func New(
@@ -31,14 +33,16 @@ func New(
 	loan *loan.Service,
 	staff *staff.Service,
 	setting *setting.Service,
+	membership *membership.Service,
 ) *Service {
 	return &Service{
-		user:    user,
-		book:    book,
-		library: library,
-		loan:    loan,
-		staff:   staff,
-		setting: setting,
+		user:       user,
+		book:       book,
+		library:    library,
+		loan:       loan,
+		staff:      staff,
+		setting:    setting,
+		membership: membership,
 	}
 }
 
@@ -125,6 +129,10 @@ func (s *Service) ListLibrarySettings(ctx context.Context, input http.ListSettin
 
 func (s *Service) UpdateLibrarySettings(ctx context.Context, input http.UpdateSettingsRequest) ([]*http.Setting, error) {
 	return s.setting.Update(ctx, input)
+}
+
+func (s *Service) ListMemberships(ctx context.Context, input http.ListMembershipsRequest) (*http.ListMembershipsResponse, error) {
+	return s.membership.List(ctx, input)
 }
 
 func (s *Service) GetStats(ctx context.Context) (*http.Stats, error) {

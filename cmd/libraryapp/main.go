@@ -11,6 +11,7 @@ import (
 	libraryService "github.com/agmmtoo/lib-manage/internal/core/library"
 	"github.com/agmmtoo/lib-manage/internal/core/libraryapp"
 	loanService "github.com/agmmtoo/lib-manage/internal/core/loan"
+	membershipService "github.com/agmmtoo/lib-manage/internal/core/membership"
 	settingService "github.com/agmmtoo/lib-manage/internal/core/setting"
 	staffService "github.com/agmmtoo/lib-manage/internal/core/staff"
 	userService "github.com/agmmtoo/lib-manage/internal/core/user"
@@ -45,8 +46,9 @@ func main() {
 	loan := loanService.New(db)
 	staff := staffService.New(db)
 	setting := settingService.New(db)
+	membership := membershipService.New(db)
 
-	service := libraryapp.New(user, book, library, loan, staff, setting)
+	service := libraryapp.New(user, book, library, loan, staff, setting, membership)
 
 	port := fmt.Sprintf(":%s", os.Getenv(config.ENV_KEY_PORT))
 	server, err := http.NewServer(port, service)
