@@ -9,6 +9,7 @@ import (
 	"github.com/agmmtoo/lib-manage/internal/core/membership"
 	"github.com/agmmtoo/lib-manage/internal/core/setting"
 	"github.com/agmmtoo/lib-manage/internal/core/staff"
+	"github.com/agmmtoo/lib-manage/internal/core/subscription"
 	"github.com/agmmtoo/lib-manage/internal/core/user"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
 	"github.com/agmmtoo/lib-manage/internal/infra/http/models"
@@ -17,13 +18,14 @@ import (
 // Service implements http Service interface
 // Service delegates the calls to underlying services
 type Service struct {
-	user       *user.Service
-	book       *book.Service
-	library    *library.Service
-	loan       *loan.Service
-	staff      *staff.Service
-	setting    *setting.Service
-	membership *membership.Service
+	user         *user.Service
+	book         *book.Service
+	library      *library.Service
+	loan         *loan.Service
+	staff        *staff.Service
+	setting      *setting.Service
+	membership   *membership.Service
+	subscription *subscription.Service
 }
 
 func New(
@@ -34,15 +36,17 @@ func New(
 	staff *staff.Service,
 	setting *setting.Service,
 	membership *membership.Service,
+	subscription *subscription.Service,
 ) *Service {
 	return &Service{
-		user:       user,
-		book:       book,
-		library:    library,
-		loan:       loan,
-		staff:      staff,
-		setting:    setting,
-		membership: membership,
+		user:         user,
+		book:         book,
+		library:      library,
+		loan:         loan,
+		staff:        staff,
+		setting:      setting,
+		membership:   membership,
+		subscription: subscription,
 	}
 }
 
@@ -133,6 +137,14 @@ func (s *Service) UpdateLibrarySettings(ctx context.Context, input http.UpdateSe
 
 func (s *Service) ListMemberships(ctx context.Context, input http.ListMembershipsRequest) (*http.ListMembershipsResponse, error) {
 	return s.membership.List(ctx, input)
+}
+
+func (s *Service) ListSubscriptions(ctx context.Context, input http.ListSubscriptionsRequest) (*http.ListSubscriptionsResponse, error) {
+	return s.subscription.List(ctx, input)
+}
+
+func (s *Service) CreateSubscription(ctx context.Context, input http.CreateSubscriptionRequest) (*models.Subscription, error) {
+	return s.subscription.Create(ctx, input)
 }
 
 func (s *Service) GetStats(ctx context.Context) (*http.Stats, error) {

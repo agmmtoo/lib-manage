@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// Core Membership model
+// API Membership model
 type Membership struct {
 	ID              int        `json:"id"`
 	LibraryID       int        `json:"library_id"`
@@ -24,4 +24,6 @@ type PartialMembership struct {
 	DurationDays    int    `json:"duration_days"`
 	ActiveLoanLimit int    `json:"active_loan_limit"`
 	FinePerDay      int    `json:"fine_per_day"`
+
+	Library *PartialLibrary `json:"library"`
 }

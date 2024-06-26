@@ -83,7 +83,7 @@ func (l *LibraryAppDB) Migrate() error {
 		migrations.CreateTableLibrariesBooks,
 		migrations.CreateTableStaffs,
 		migrations.CreateTableMemberships,
-		migrations.CreateTableUsersMemberships,
+		migrations.CreateTableSubscriptions,
 		migrations.CreateTableLoans,
 		migrations.CreateTableSetting,
 	}

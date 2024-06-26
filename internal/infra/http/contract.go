@@ -37,6 +37,9 @@ type Servicer interface {
 
 	ListMemberships(ctx context.Context, input ListMembershipsRequest) (*ListMembershipsResponse, error)
 
+	ListSubscriptions(ctx context.Context, input ListSubscriptionsRequest) (*ListSubscriptionsResponse, error)
+	CreateSubscription(ctx context.Context, input CreateSubscriptionRequest) (*models.Subscription, error)
+
 	// GetUsersByBookName(ctx context.Context, name string) ([]*libraryapp.User, error)
 
 	Ping(ctx context.Context) (string, error)
@@ -262,3 +265,23 @@ type ListMembershipsRequest struct {
 }
 
 type ListMembershipsResponse = ListResponse[models.Membership]
+
+type ListSubscriptionsRequest struct {
+	IDs           []int      `json:"ids"`
+	UserIDs       []int      `json:"user_ids"`
+	MembershipIDs []int      `json:"membership_ids"`
+	ExpiryDate    *time.Time `json:"expiry_date,omitempty"`
+	Skip          int        `json:"skip"`
+	Limit         int        `json:"limit"`
+
+	ExpiredBefore *time.Time `json:"expired_before,omitempty"`
+	ExpiredAfter  *time.Time `json:"expired_after,omitempty"`
+	LibraryIDs    []int      `json:"library_ids"`
+}
+
+type ListSubscriptionsResponse = ListResponse[models.Subscription]
+
+type CreateSubscriptionRequest struct {
+	UserID       int `json:"user_id"`
+	MembershipID int `json:"membership_id"`
+}

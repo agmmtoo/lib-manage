@@ -16,5 +16,5 @@ type Loan struct {
 	DeletedAt        *time.Time
 
 	LibraryBook    *PartialLibraryBook
-	UserMembership *PartialUserMembership
+	UserMembership *PartialSubscription
 }

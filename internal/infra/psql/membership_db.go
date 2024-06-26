@@ -68,3 +68,25 @@ func (l *LibraryAppDB) ListMemberships(ctx context.Context, input membership.Lis
 		Memberships: memberships,
 	}, nil
 }
+
+func (l *LibraryAppDB) GetMembershipByID(ctx context.Context, id int) (*cm.Membership, error) {
+	q := `
+		SELECT
+			m.id, m.library_id, m.name, m.duration_days, m.active_loan_limit, m.fine_per_day, m.created_at, m.updated_at, m.deleted_at,
+			l.id, l.name
+		FROM memberships m
+		JOIN libraries l ON m.library_id = l.id
+		WHERE m.id = $1
+	`
+
+	var m models.Membership
+	err := l.db.QueryRowContext(ctx, q, id).Scan(
+		&m.ID, &m.LibraryID, &m.Name, &m.DurationDays, &m.ActiveLoanLimit, &m.FinePerDay, &m.CreatedAt, &m.UpdatedAt, &m.DeletedAt,
+		&m.LibraryID, &m.LibraryName,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return m.ToCoreModel(), nil
+}

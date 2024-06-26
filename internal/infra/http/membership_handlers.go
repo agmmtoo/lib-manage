@@ -73,7 +73,7 @@ func (h *LibraryAppHandler) ListMemberships(w http.ResponseWriter, r *http.Reque
 		fpd = &d
 	}
 
-	libraries, err := h.service.ListMemberships(r.Context(), ListMembershipsRequest{
+	memberships, err := h.service.ListMemberships(r.Context(), ListMembershipsRequest{
 		IDs:             ids,
 		LibraryIDs:      libIDs,
 		Name:            name,
@@ -87,5 +87,5 @@ func (h *LibraryAppHandler) ListMemberships(w http.ResponseWriter, r *http.Reque
 		return err
 	}
 
-	return writeJSON(w, http.StatusOK, libraries)
+	return writeJSON(w, http.StatusOK, memberships)
 }

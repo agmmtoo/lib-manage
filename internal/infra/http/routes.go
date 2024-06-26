@@ -40,6 +40,9 @@ func (s *Server) registerRoutes(
 
 	mux.HandleFunc("GET /api/v1/memberships", MakeHandler(handler.ListMemberships))
 
+	mux.HandleFunc("GET /api/v1/subscriptions", MakeHandler(handler.ListSubscriptions))
+	mux.HandleFunc("POST /api/v1/subscriptions", MakeHandler(handler.CreateSubscription))
+
 	mux.HandleFunc("GET /api/v1/public", MakeHandler(handler.GetStats))
 
 	return mux

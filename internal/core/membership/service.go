@@ -44,6 +44,7 @@ func (s *Service) List(ctx context.Context, input http.ListMembershipsRequest) (
 
 type Storer interface {
 	ListMemberships(ctx context.Context, input ListRequest) (*ListResponse, error)
+	GetMembershipByID(ctx context.Context, id int) (*models.Membership, error)
 }
 
 type ListRequest struct {
