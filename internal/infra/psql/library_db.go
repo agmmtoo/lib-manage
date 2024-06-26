@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/agmmtoo/lib-manage/internal/core/library"
+	cm "github.com/agmmtoo/lib-manage/internal/core/models"
+	"github.com/agmmtoo/lib-manage/internal/infra/psql/models"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -16,7 +18,7 @@ func (l *LibraryAppDB) ListLibraries(ctx context.Context, input library.ListRequ
 	// q := "SELECT id, name, created_at, updated_at, deleted_at FROM library;"
 	// args := []any{}
 	qb := &QueryBuilder{
-		Table:        "library",
+		Table:        "libraries",
 		ParamCounter: 1,
 	}
 	if len(input.IDs) > 0 {
@@ -37,14 +39,14 @@ func (l *LibraryAppDB) ListLibraries(ctx context.Context, input library.ListRequ
 
 	defer rows.Close()
 
-	var libraries []*libraryapp.Library
+	var libraries []*cm.Library
 	for rows.Next() {
-		var lib libraryapp.Library
+		var lib models.Library
 		err := rows.Scan(&lib.ID, &lib.Name, &lib.CreatedAt, &lib.UpdatedAt, &lib.DeletedAt)
 		if err != nil {
 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning library", err)
 		}
-		libraries = append(libraries, &lib)
+		libraries = append(libraries, lib.ToCoreModel())
 	}
 
 	if err := rows.Err(); err != nil {

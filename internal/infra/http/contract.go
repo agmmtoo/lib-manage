@@ -14,7 +14,7 @@ type Servicer interface {
 	CreateUser(ctx context.Context, input CreateUserRequest) (*User, error)
 
 	ListBooks(ctx context.Context, input ListBooksRequest) (*ListBooksResponse, error)
-	GetBookByID(ctx context.Context, id int) (*Book, error)
+	GetBookByID(ctx context.Context, id int) (*models.LibraryBook, error)
 	CreateBook(ctx context.Context, input CreateBookRequest) (*Book, error)
 
 	ListLibraries(ctx context.Context, input ListLibrariesRequest) (*ListLibrariesResponse, error)
@@ -53,7 +53,7 @@ type ListUsersRequest struct {
 	Username string
 }
 
-type ListUsersResponse = ListResponse[User]
+type ListUsersResponse = ListResponse[models.User]
 
 type User struct {
 	ID        int        `json:"id"`
@@ -109,7 +109,7 @@ type ListLibrariesRequest struct {
 	Name  string
 }
 
-type ListLibrariesResponse = ListResponse[Library]
+type ListLibrariesResponse = ListResponse[models.Library]
 
 type CreateLibraryRequest struct {
 	Name string `json:"name"`
@@ -163,6 +163,7 @@ type CreateLoanRequest struct {
 	DueDate   *time.Time `json:"due_date"`
 }
 
+// DEPRECATED
 type Staff struct {
 	ID        int        `json:"id"`
 	UserID    int        `json:"user_id"`
@@ -179,7 +180,7 @@ type ListStaffsRequest struct {
 	Skip       int
 }
 
-type ListStaffsResponse = ListResponse[Staff]
+type ListStaffsResponse = ListResponse[models.Staff]
 
 type CreateStaffRequest struct {
 	UserID int `json:"user_id"`

@@ -5,7 +5,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
+	"github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
+	am "github.com/agmmtoo/lib-manage/internal/infra/http/models"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
@@ -29,15 +31,9 @@ func (s *Service) List(ctx context.Context, input http.ListUsersRequest) (*http.
 		return nil, err
 	}
 
-	var users []*http.User
+	var users []*am.User
 	for _, u := range result.Users {
-		users = append(users, &http.User{
-			ID:        u.ID,
-			Username:  u.Username,
-			CreatedAt: u.CreatedAt,
-			UpdatedAt: u.UpdatedAt,
-			DeletedAt: u.DeletedAt,
-		})
+		users = append(users, u.ToAPIModel())
 	}
 
 	return &http.ListUsersResponse{
@@ -108,7 +104,7 @@ type ListRequest struct {
 }
 
 type ListResponse struct {
-	Users []*libraryapp.User
+	Users []*models.User
 	Total int
 }
 

@@ -3,7 +3,9 @@ package staff
 import (
 	"context"
 
+	"github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
+	am "github.com/agmmtoo/lib-manage/internal/infra/http/models"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
@@ -27,15 +29,9 @@ func (s *Service) List(ctx context.Context, input http.ListStaffsRequest) (*http
 	if err != nil {
 		return nil, err
 	}
-	var staffs []*http.Staff
+	var staffs []*am.Staff
 	for _, s := range result.Staffs {
-		staffs = append(staffs, &http.Staff{
-			ID:        s.ID,
-			UserID:    s.UserID,
-			CreatedAt: s.CreatedAt,
-			UpdatedAt: s.UpdatedAt,
-			DeletedAt: s.DeletedAt,
-		})
+		staffs = append(staffs, s.ToAPIModel())
 	}
 	return &http.ListStaffsResponse{
 		Data:  staffs,
@@ -93,7 +89,7 @@ type ListRequest struct {
 }
 
 type ListResponse struct {
-	Staffs []*libraryapp.Staff
+	Staffs []*models.Staff
 	Total  int
 }
 

@@ -3,7 +3,7 @@ package migrations
 const CreateTableStaffs = `
 CREATE TABLE IF NOT EXISTS staffs (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL UNIQUE REFERENCES users(id),
+    user_id INT NOT NULL REFERENCES users(id),
 	library_id INT NOT NULL REFERENCES libraries(id),
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

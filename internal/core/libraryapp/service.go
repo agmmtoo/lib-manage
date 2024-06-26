@@ -10,6 +10,7 @@ import (
 	"github.com/agmmtoo/lib-manage/internal/core/staff"
 	"github.com/agmmtoo/lib-manage/internal/core/user"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
+	"github.com/agmmtoo/lib-manage/internal/infra/http/models"
 )
 
 // Service implements http Service interface
@@ -62,7 +63,7 @@ func (s *Service) ListBooks(ctx context.Context, input http.ListBooksRequest) (*
 	return s.book.List(ctx, input)
 }
 
-func (s *Service) GetBookByID(ctx context.Context, id int) (*http.Book, error) {
+func (s *Service) GetBookByID(ctx context.Context, id int) (*models.LibraryBook, error) {
 	return s.book.GetByID(ctx, id)
 }
 

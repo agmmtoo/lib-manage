@@ -41,19 +41,13 @@ func (s *Service) List(ctx context.Context, input http.ListBooksRequest) (*http.
 	}, nil
 }
 
-func (s *Service) GetByID(ctx context.Context, id int) (*http.Book, error) {
-	result, err := s.repo.GetBookByID(ctx, id)
+func (s *Service) GetByID(ctx context.Context, id int) (*am.LibraryBook, error) {
+	b, err := s.repo.GetBookByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return &http.Book{
-		ID:        result.ID,
-		Title:     result.Title,
-		Author:    result.Author,
-		CreatedAt: result.CreatedAt,
-		UpdatedAt: result.UpdatedAt,
-		DeletedAt: result.DeletedAt,
-	}, nil
+
+	return b.ToAPIModel(), nil
 }
 
 func (s *Service) Create(ctx context.Context, input http.CreateBookRequest) (*http.Book, error) {
@@ -80,7 +74,7 @@ func (s *Service) Count(ctx context.Context) (int, error) {
 
 type Storer interface {
 	ListBooks(ctx context.Context, input ListRequest) (*ListResponse, error)
-	GetBookByID(ctx context.Context, id int) (*libraryapp.Book, error)
+	GetBookByID(ctx context.Context, id int) (*models.LibraryBook, error)
 	CreateBook(ctx context.Context, input CreateRequest) (*libraryapp.Book, error)
 	CountBooks(ctx context.Context) (int, error)
 }

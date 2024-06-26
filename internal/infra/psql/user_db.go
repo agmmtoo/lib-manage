@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"strings"
 
+	cm "github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/core/user"
+	"github.com/agmmtoo/lib-manage/internal/infra/psql/models"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
 func (l *LibraryAppDB) ListUsers(ctx context.Context, input user.ListRequest) (*user.ListResponse, error) {
 	qb := &QueryBuilder{
-		Table:        "\"user\"",
+		Table:        "\"users\"",
 		ParamCounter: 1,
 		Cols:         []string{"id", "username", "created_at", "updated_at", "deleted_at"},
 	}
@@ -33,14 +35,14 @@ func (l *LibraryAppDB) ListUsers(ctx context.Context, input user.ListRequest) (*
 
 	defer rows.Close()
 
-	var users []*libraryapp.User
+	var users []*cm.User
 	for rows.Next() {
-		var u libraryapp.User
+		var u models.User
 		err := rows.Scan(&u.ID, &u.Username, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
 		if err != nil {
 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning user", err)
 		}
-		users = append(users, &u)
+		users = append(users, u.ToCoreModel())
 	}
 
 	if err := rows.Err(); err != nil {

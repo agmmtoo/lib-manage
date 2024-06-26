@@ -5,15 +5,21 @@ import (
 	"database/sql"
 	"strings"
 
+	cm "github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/core/staff"
+	"github.com/agmmtoo/lib-manage/internal/infra/psql/models"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
 func (l *LibraryAppDB) ListStaffs(ctx context.Context, input staff.ListRequest) (*staff.ListResponse, error) {
 	qb := &QueryBuilder{
-		Table:        "staff s",
+		Table:        "staffs s",
 		ParamCounter: 1,
-		Cols:         []string{"s.id", "s.user_id", "s.created_at", "s.updated_at", "s.deleted_at"},
+		Cols: []string{
+			"s.id", "s.user_id", "s.library_id", "s.created_at", "s.updated_at", "s.deleted_at",
+			"l.id", "l.name",
+			"u.id", "u.username",
+		},
 	}
 	if len(input.IDs) > 0 {
 		qb.AddClause("s.id = ANY($%d)", input.IDs)
@@ -21,10 +27,17 @@ func (l *LibraryAppDB) ListStaffs(ctx context.Context, input staff.ListRequest) 
 	if len(input.UserIDs) > 0 {
 		qb.AddClause("s.user_id = ANY($%d)", input.UserIDs)
 	}
+
+	// Join with "libraries"
+	qb.JoinTables = append(qb.JoinTables, "JOIN libraries l ON s.library_id = l.id")
+
+	// Join with "users"
+	qb.JoinTables = append(qb.JoinTables, "JOIN users u ON s.user_id = u.id")
+
 	if len(input.LibraryIDs) > 0 {
-		qb.JoinTables = append(qb.JoinTables, "JOIN library_staff ls ON s.id = ls.staff_id")
-		qb.AddClause("ls.library_id = ANY($%d)", input.LibraryIDs)
+		qb.AddClause("s.library_id = ANY($%d)", input.LibraryIDs)
 	}
+
 	qb.SetLimit(input.Limit)
 	qb.SetOffset(input.Offset)
 	q, args := qb.Build()
@@ -36,14 +49,18 @@ func (l *LibraryAppDB) ListStaffs(ctx context.Context, input staff.ListRequest) 
 
 	defer rows.Close()
 
-	var staffs []*libraryapp.Staff
+	var staffs []*cm.Staff
 	for rows.Next() {
-		var s libraryapp.Staff
-		err := rows.Scan(&s.ID, &s.UserID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
+		var s models.Staff
+		err := rows.Scan(
+			&s.ID, &s.UserID, &s.LibraryID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt,
+			&s.LibraryID, &s.LibraryName,
+			&s.UserID, &s.UserUsername,
+		)
 		if err != nil {
 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning staff", err)
 		}
-		staffs = append(staffs, &s)
+		staffs = append(staffs, s.ToCoreModel())
 	}
 
 	if err := rows.Err(); err != nil {

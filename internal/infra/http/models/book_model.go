@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// Core Book model
+// API Book model
 type Book struct {
 	ID        int        `json:"id"`
 	Title     string     `json:"title"`
@@ -23,7 +23,7 @@ type PartialBook struct {
 	SubCategory *PartialSubCategory `json:"sub_category,omitempty"`
 }
 
-// Core Book model
+// API Book model
 type LibraryBook struct {
 	ID        int        `json:"id"`
 	Code      string     `json:"code"`

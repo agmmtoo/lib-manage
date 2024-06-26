@@ -3,7 +3,9 @@ package library
 import (
 	"context"
 
+	"github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
+	am "github.com/agmmtoo/lib-manage/internal/infra/http/models"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
@@ -26,15 +28,9 @@ func (s *Service) List(ctx context.Context, input http.ListLibrariesRequest) (*h
 		return nil, err
 	}
 
-	var libs []*http.Library
+	var libs []*am.Library
 	for _, l := range result.Libraries {
-		libs = append(libs, &http.Library{
-			ID:        l.ID,
-			Name:      l.Name,
-			CreatedAt: l.CreatedAt,
-			UpdatedAt: l.UpdatedAt,
-			DeletedAt: l.DeletedAt,
-		})
+		libs = append(libs, l.ToAPIModel())
 	}
 
 	return &http.ListLibrariesResponse{
@@ -144,7 +140,7 @@ type ListRequest struct {
 }
 
 type ListResponse struct {
-	Libraries []*libraryapp.Library
+	Libraries []*models.Library
 	Total     int
 }
 
