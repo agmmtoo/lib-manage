@@ -5,7 +5,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
+	am "github.com/agmmtoo/lib-manage/internal/infra/http/models"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
 )
@@ -20,70 +22,24 @@ func New(repo Storer) *Service {
 
 func (s *Service) List(ctx context.Context, input http.ListLoansRequest) (*http.ListLoansResponse, error) {
 	result, err := s.repo.ListLoans(ctx, ListRequest{
-		IDs:            input.IDs,
-		Limit:          input.Limit,
-		Offset:         input.Skip,
-		Active:         input.Active,
-		UserIDs:        input.UserIDs,
-		BookIDs:        input.BookIDs,
-		LibraryIDs:     input.LibraryIDs,
-		StaffIDs:       input.StaffIDs,
-		IncludeUser:    input.IncludeUser,
-		IncludeBook:    input.IncludeBook,
-		IncludeLibrary: input.IncludeLibrary,
-		IncludeStaff:   input.IncludeStaff,
+		IDs:                 input.IDs,
+		Limit:               input.Limit,
+		Offset:              input.Skip,
+		Active:              input.Active,
+		UserIDs:             input.UserIDs,
+		BookIDs:             input.BookIDs,
+		LibraryIDs:          input.LibraryIDs,
+		StaffIDs:            input.StaffIDs,
+		IncludeLibraryBook:  input.IncludeLibraryBook,
+		IncludeSubscription: input.IncludeSubscription,
+		IncludeStaff:        input.IncludeStaff,
 	})
 	if err != nil {
 		return nil, err
 	}
-	var loans []*http.Loan
+	var loans []*am.Loan
 	for _, l := range result.Loans {
-		loans = append(loans, &http.Loan{
-			ID:         l.ID,
-			UserID:     l.UserID,
-			BookID:     l.BookID,
-			LibraryID:  l.LibraryID,
-			StaffID:    l.StaffID,
-			LoanDate:   l.LoanDate,
-			DueDate:    l.DueDate,
-			ReturnDate: l.ReturnDate,
-			CreatedAt:  l.CreatedAt,
-			UpdatedAt:  l.UpdatedAt,
-			DeletedAt:  l.DeletedAt,
-			// FIXME: nil pointer dereference
-			User: &http.User{
-				ID:        l.User.ID,
-				Username:  l.User.Username,
-				CreatedAt: l.User.CreatedAt,
-				UpdatedAt: l.User.UpdatedAt,
-				DeletedAt: l.User.DeletedAt,
-			},
-			// FIXME: nil pointer dereference
-			Book: &http.Book{
-				ID:        l.Book.ID,
-				Title:     l.Book.Title,
-				Author:    l.Book.Author,
-				CreatedAt: l.Book.CreatedAt,
-				UpdatedAt: l.Book.UpdatedAt,
-				DeletedAt: l.Book.DeletedAt,
-			},
-			// FIXME: nil pointer dereference
-			Staff: &http.Staff{
-				ID:        l.Staff.ID,
-				UserID:    l.Staff.UserID,
-				CreatedAt: l.Staff.CreatedAt,
-				UpdatedAt: l.Staff.UpdatedAt,
-				DeletedAt: l.Staff.DeletedAt,
-			},
-			// FIXME: nil pointer dereference
-			Library: &http.Library{
-				ID:        l.Library.ID,
-				Name:      l.Library.Name,
-				CreatedAt: l.Library.CreatedAt,
-				UpdatedAt: l.Library.UpdatedAt,
-				DeletedAt: l.Library.DeletedAt,
-			},
-		})
+		loans = append(loans, l.ToAPIModel())
 	}
 
 	return &http.ListLoansResponse{
@@ -200,14 +156,13 @@ type ListRequest struct {
 	Limit      int
 	Offset     int
 
-	IncludeUser    bool
-	IncludeBook    bool
-	IncludeStaff   bool
-	IncludeLibrary bool
+	IncludeLibraryBook  bool
+	IncludeSubscription bool
+	IncludeStaff        bool
 }
 
 type ListResponse struct {
-	Loans []*libraryapp.Loan
+	Loans []*models.Loan
 	Total int
 }
 

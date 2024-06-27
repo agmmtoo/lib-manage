@@ -47,3 +47,12 @@ func (s *Staff) ToAPIModel() *models.Staff {
 		Library:   l,
 	}
 }
+
+type PartialStaff struct {
+	ID        int
+	UserID    int
+	LibraryID int
+
+	User    *PartialUser
+	Library *PartialLibrary
+}

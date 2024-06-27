@@ -28,7 +28,7 @@ const CreateTableLoans = `
 CREATE TABLE IF NOT EXISTS loans (
     id SERIAL PRIMARY KEY,
     library_book_id INT NOT NULL REFERENCES libraries_books(id),
-    user_membership_id INT NOT NULL REFERENCES users_memberships(id),
+    subscription_id INT NOT NULL REFERENCES subscriptions(id),
     staff_id INT NOT NULL REFERENCES staffs(id),
     loan_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     due_date TIMESTAMP NOT NULL,

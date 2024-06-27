@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"github.com/agmmtoo/lib-manage/internal/core/loan"
+	cm "github.com/agmmtoo/lib-manage/internal/core/models"
+	"github.com/agmmtoo/lib-manage/internal/infra/psql/models"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -13,29 +15,44 @@ import (
 func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*loan.ListResponse, error) {
 
 	qb := &QueryBuilder{
-		Table:        "loan l",
+		Table:        "loans l",
 		ParamCounter: 1,
-		Cols:         []string{"l.id", "l.book_id", "l.user_id", "l.library_id", "l.staff_id", "l.loan_date", "l.due_date", "l.return_date", "l.created_at", "l.updated_at", "l.deleted_at"},
+		Cols: []string{
+			"l.id", "l.library_book_id", "l.subscription_id", "l.staff_id", "l.loan_date", "l.due_date", "l.return_date", "l.created_at", "l.updated_at", "l.deleted_at",
+		},
 	}
 
-	if input.IncludeUser {
-		qb.JoinTables = append(qb.JoinTables, "JOIN \"user\" u ON l.user_id = u.id")
-		qb.Cols = append(qb.Cols, "u.id", "u.username", "u.created_at", "u.updated_at", "u.deleted_at")
+	if input.IncludeLibraryBook {
+		qb.JoinTables = append(qb.JoinTables, "JOIN libraries_books lb ON l.library_book_id = lb.id")
+		qb.Cols = append(qb.Cols, "lb.id", "lb.library_id", "lb.book_id", "lb.code")
+		qb.JoinTables = append(qb.JoinTables, "JOIN libraries lbl ON lb.library_id = lbl.id")
+		qb.Cols = append(qb.Cols, "lbl.id", "lbl.name")
+		qb.JoinTables = append(qb.JoinTables, "JOIN books b ON lb.book_id = b.id")
+		qb.Cols = append(qb.Cols, "b.id", "b.title", "b.author", "b.sub_category_id")
+		qb.JoinTables = append(qb.JoinTables, "JOIN sub_categories sc ON b.sub_category_id = sc.id")
+		qb.Cols = append(qb.Cols, "sc.id", "sc.category_id", "sc.name")
+		qb.JoinTables = append(qb.JoinTables, "JOIN categories c ON sc.category_id = c.id")
+		qb.Cols = append(qb.Cols, "c.id", "c.name")
 	}
 
-	if input.IncludeBook {
-		qb.JoinTables = append(qb.JoinTables, "JOIN \"book\" b ON l.book_id = b.id")
-		qb.Cols = append(qb.Cols, "b.id", "b.title", "b.author", "b.created_at", "b.updated_at", "b.deleted_at")
+	if input.IncludeSubscription {
+		qb.JoinTables = append(qb.JoinTables, "JOIN subscriptions s ON l.subscription_id = s.id")
+		qb.Cols = append(qb.Cols, "s.id", "s.user_id", "s.membership_id", "s.expiry_date")
+		qb.JoinTables = append(qb.JoinTables, "JOIN users u ON s.user_id = u.id")
+		qb.Cols = append(qb.Cols, "u.id", "u.username")
+		qb.JoinTables = append(qb.JoinTables, "JOIN memberships m ON s.membership_id = m.id")
+		qb.Cols = append(qb.Cols, "m.id", "m.library_id", "m.name", "m.duration_days", "m.active_loan_limit", "m.fine_per_day")
+		qb.JoinTables = append(qb.JoinTables, "JOIN libraries lib ON m.library_id = lib.id")
+		qb.Cols = append(qb.Cols, "lib.id", "lib.name")
 	}
 
 	if input.IncludeStaff {
-		qb.JoinTables = append(qb.JoinTables, "JOIN \"staff\" s ON l.staff_id = s.id")
-		qb.Cols = append(qb.Cols, "s.id", "s.user_id", "s.created_at", "s.updated_at", "s.deleted_at")
-	}
-
-	if input.IncludeLibrary {
-		qb.JoinTables = append(qb.JoinTables, "JOIN \"library\" lb ON l.library_id = lb.id")
-		qb.Cols = append(qb.Cols, "lb.id", "lb.name", "lb.created_at", "lb.updated_at", "lb.deleted_at")
+		qb.JoinTables = append(qb.JoinTables, "JOIN staffs st ON l.staff_id = st.id")
+		qb.Cols = append(qb.Cols, "st.id", "st.user_id", "st.library_id")
+		qb.JoinTables = append(qb.JoinTables, "JOIN users stu ON st.user_id = stu.id")
+		qb.Cols = append(qb.Cols, "stu.id", "stu.username")
+		qb.JoinTables = append(qb.JoinTables, "JOIN libraries stl ON st.library_id = stl.id")
+		qb.Cols = append(qb.Cols, "stl.id", "stl.name")
 	}
 
 	if len(input.IDs) > 0 {
@@ -64,31 +81,49 @@ func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*
 
 	defer rows.Close()
 
-	var loans []*libraryapp.Loan
+	var loans []*cm.Loan
 	for rows.Next() {
-		var l libraryapp.Loan
-		dests := []interface{}{&l.ID, &l.BookID, &l.UserID, &l.LibraryID, &l.StaffID, &l.LoanDate, &l.DueDate, &l.ReturnDate, &l.CreatedAt, &l.UpdatedAt, &l.DeletedAt}
-		if input.IncludeUser {
-			l.User = &libraryapp.User{}
-			dests = append(dests, &l.User.ID, &l.User.Username, &l.User.CreatedAt, &l.User.UpdatedAt, &l.User.DeletedAt)
+		var l models.Loan
+		dests := []interface{}{&l.ID, &l.LibraryBookID, &l.SubscriptionID, &l.StaffID, &l.LoanDate, &l.DueDate, &l.ReturnDate, &l.CreatedAt, &l.UpdatedAt, &l.DeletedAt}
+
+		if input.IncludeLibraryBook {
+			// "lb.id", "lb.library_id", "lb.book_id", "lb.code"
+			dests = append(dests, &l.LibraryBookID, &l.LibraryBookLibraryID, &l.LibraryBookBookID, &l.LibraryBookCode)
+			// "lbl.id", "lbl.name"
+			dests = append(dests, &l.LibraryBookLibraryID, &l.LibraryBookLibraryName)
+			// "b.id", "b.title", "b.author"
+			dests = append(dests, &l.LibraryBookBookID, &l.LibraryBookBookTitle, &l.LibraryBookBookAuthor, &l.LibraryBookBookSubCategoryID)
+			// "sc.id", "sc.category_id", "sc.name"
+			dests = append(dests, &l.LibraryBookBookSubCategoryID, &l.LibraryBookBookSubCategoryCategoryID, &l.LibraryBookBookSubCategoryName)
+			// "c.id", "c.name"
+			dests = append(dests, &l.LibraryBookBookSubCategoryCategoryID, &l.LibraryBookBookSubCategoryCategoryName)
 		}
-		if input.IncludeBook {
-			l.Book = &libraryapp.Book{}
-			dests = append(dests, &l.Book.ID, &l.Book.Title, &l.Book.Author, &l.Book.CreatedAt, &l.Book.UpdatedAt, &l.Book.DeletedAt)
+
+		if input.IncludeSubscription {
+			// "s.id", "s.user_id", "s.membership_id", "s.expiry_date"
+			dests = append(dests, &l.SubscriptionID, &l.SubscriptionUserID, &l.SubscriptionMembershipID, &l.SubscriptionExpiryDate)
+			// "u.id", "u.username"
+			dests = append(dests, &l.SubscriptionUserID, &l.SubscriptionUserUsername)
+			// "m.id", "m.library_id", "m.name", "m.duration_days", "m.active_loan_limit", "m.fine_per_day"
+			dests = append(dests, &l.SubscriptionMembershipID, &l.SubscriptionMembershipLibraryID, &l.SubscriptionMembershipName, &l.SubscriptionMembershipDurationDays, &l.SubscriptionMembershipActiveLoanLimit, &l.SubscriptionMembershipFinePerDay)
+			// "lib.id", "lib.name"
+			dests = append(dests, &l.SubscriptionMembershipLibraryID, &l.SubscriptionMembershipLibraryName)
 		}
+
 		if input.IncludeStaff {
-			l.Staff = &libraryapp.Staff{}
-			dests = append(dests, &l.Staff.ID, &l.Staff.UserID, &l.Staff.CreatedAt, &l.Staff.UpdatedAt, &l.Staff.DeletedAt)
+			// "st.id", "st.user_id", "st.library_id"
+			dests = append(dests, &l.StaffID, &l.StaffUserID, &l.StaffLibraryID)
+			// "u.id", "u.username"
+			dests = append(dests, &l.StaffUserID, &l.StaffUserUsername)
+			// "lib.id", "lib.name"
+			dests = append(dests, &l.StaffLibraryID, &l.StaffLibraryName)
 		}
-		if input.IncludeLibrary {
-			l.Library = &libraryapp.Library{}
-			dests = append(dests, &l.Library.ID, &l.Library.Name, &l.Library.CreatedAt, &l.Library.UpdatedAt, &l.Library.DeletedAt)
-		}
+
 		err := rows.Scan(dests...)
 		if err != nil {
 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning loan", err)
 		}
-		loans = append(loans, &l)
+		loans = append(loans, l.ToCoreModel())
 	}
 
 	if err := rows.Err(); err != nil {

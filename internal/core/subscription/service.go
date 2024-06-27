@@ -57,8 +57,9 @@ func (s *Service) Create(ctx context.Context, input http.CreateSubscriptionReque
 		return nil, errors.New("membership not found")
 	}
 
-	// check if user_id has an active subscription for given library
 	now := time.Now()
+
+	// check if user_id has an active subscription for given library
 	ac, err := s.repo.ListSubscriptions(ctx, ListRequest{
 		UserIDs:      []int{input.UserID},
 		LibraryIDs:   []int{membership.LibraryID},

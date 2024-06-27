@@ -88,16 +88,14 @@ func (h *LibraryAppHandler) ListLoans(w http.ResponseWriter, r *http.Request) er
 
 	}
 
-	var includeUser, includeBook, includeLibrary, includeStaff bool
+	var includeLibraryBook, includeSubscription, includeStaff bool
 	if qInclude := r.URL.Query().Get("include"); strings.TrimSpace(qInclude) != "" {
 		for _, inc := range strings.Split(qInclude, ",") {
 			switch inc {
-			case "user":
-				includeUser = true
 			case "book":
-				includeBook = true
-			case "library":
-				includeLibrary = true
+				includeLibraryBook = true
+			case "subscription":
+				includeSubscription = true
 			case "staff":
 				includeStaff = true
 			}
@@ -105,18 +103,17 @@ func (h *LibraryAppHandler) ListLoans(w http.ResponseWriter, r *http.Request) er
 	}
 
 	loans, err := h.service.ListLoans(r.Context(), ListLoansRequest{
-		Limit:          limit,
-		Skip:           skip,
-		Active:         active,
-		IDs:            ids,
-		UserIDs:        userIDs,
-		BookIDs:        bookIDS,
-		LibraryIDs:     libIDs,
-		StaffIDs:       staffIDs,
-		IncludeUser:    includeUser,
-		IncludeBook:    includeBook,
-		IncludeLibrary: includeLibrary,
-		IncludeStaff:   includeStaff,
+		Limit:               limit,
+		Skip:                skip,
+		Active:              active,
+		IDs:                 ids,
+		UserIDs:             userIDs,
+		BookIDs:             bookIDS,
+		LibraryIDs:          libIDs,
+		StaffIDs:            staffIDs,
+		IncludeLibraryBook:  includeLibraryBook,
+		IncludeSubscription: includeSubscription,
+		IncludeStaff:        includeStaff,
 	})
 
 	if err != nil {

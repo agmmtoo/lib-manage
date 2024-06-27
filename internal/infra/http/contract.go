@@ -150,13 +150,12 @@ type ListLoansRequest struct {
 	StaffIDs   []int
 	DueDate    time.Time
 
-	IncludeUser    bool
-	IncludeBook    bool
-	IncludeStaff   bool
-	IncludeLibrary bool
+	IncludeLibraryBook  bool
+	IncludeSubscription bool
+	IncludeStaff        bool
 }
 
-type ListLoansResponse = ListResponse[Loan]
+type ListLoansResponse = ListResponse[models.Loan]
 
 type CreateLoanRequest struct {
 	ID        int        `json:"id"`
