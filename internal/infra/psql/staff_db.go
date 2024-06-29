@@ -72,14 +72,15 @@ func (l *LibraryAppDB) ListStaffs(ctx context.Context, input staff.ListRequest) 
 	}, nil
 }
 
-func (l *LibraryAppDB) GetStaffByID(ctx context.Context, id int) (*libraryapp.Staff, error) {
-	q := "SELECT id, user_id, created_at, updated_at, deleted_at FROM staff WHERE id = $1;"
+func (l *LibraryAppDB) GetStaffByID(ctx context.Context, id int) (*cm.Staff, error) {
+	q := "SELECT id, user_id, library_id, created_at, updated_at, deleted_at FROM staffs WHERE id = $1;"
 	args := []any{id}
 
 	row := l.db.QueryRowContext(ctx, q, args...)
 
-	var s libraryapp.Staff
-	err := row.Scan(&s.ID, &s.UserID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
+	var s models.Staff
+	err := row.Scan(&s.ID, &s.UserID, &s.LibraryID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
+	// TODO: handle pg error (old code)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "staff not found", err)
@@ -87,7 +88,7 @@ func (l *LibraryAppDB) GetStaffByID(ctx context.Context, id int) (*libraryapp.St
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error getting staff", err)
 	}
 
-	return &s, nil
+	return s.ToCoreModel(), nil
 }
 
 func (l *LibraryAppDB) CreateStaff(ctx context.Context, input staff.CreateRequest) (*libraryapp.Staff, error) {

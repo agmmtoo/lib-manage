@@ -108,7 +108,7 @@ func (h *LibraryAppHandler) ListLoans(w http.ResponseWriter, r *http.Request) er
 		Active:              active,
 		IDs:                 ids,
 		UserIDs:             userIDs,
-		BookIDs:             bookIDS,
+		LibraryBookIDs:      bookIDS,
 		LibraryIDs:          libIDs,
 		StaffIDs:            staffIDs,
 		IncludeLibraryBook:  includeLibraryBook,

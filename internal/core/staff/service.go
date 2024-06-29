@@ -75,7 +75,7 @@ func (s *Service) Count(ctx context.Context) (int, error) {
 
 type Storer interface {
 	ListStaffs(ctx context.Context, input ListRequest) (*ListResponse, error)
-	GetStaffByID(ctx context.Context, id int) (*libraryapp.Staff, error)
+	GetStaffByID(ctx context.Context, id int) (*models.Staff, error)
 	CreateStaff(ctx context.Context, input CreateRequest) (*libraryapp.Staff, error)
 	CountStaffs(ctx context.Context) (int, error)
 }

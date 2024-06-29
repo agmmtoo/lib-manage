@@ -61,15 +61,23 @@ func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*
 	if input.Active {
 		qb.AddClause("l.return_date IS NULL")
 	}
-	if len(input.UserIDs) > 0 {
-		qb.AddClause("l.user_id = ANY($%d)", input.UserIDs)
+	if input.ExpiryDate != nil {
+		qb.AddClause("DATE(l.due_date) = DATE($%d)", input.ExpiryDate)
 	}
-	if len(input.BookIDs) > 0 {
-		qb.AddClause("l.book_id = ANY($%d)", input.BookIDs)
+
+	if input.IncludeSubscription {
+		if len(input.UserIDs) > 0 {
+			qb.AddClause("s.user_id = ANY($%d)", input.UserIDs)
+		}
+		if len(input.LibraryIDs) > 0 {
+			qb.AddClause("m.library_id = ANY($%d)", input.LibraryIDs)
+		}
 	}
-	if len(input.LibraryIDs) > 0 {
-		qb.AddClause("l.library_id = ANY($%d)", input.LibraryIDs)
+
+	if len(input.LibraryBookIDs) > 0 {
+		qb.AddClause("l.library_book_id = ANY($%d)", input.LibraryBookIDs)
 	}
+
 	qb.SetLimit(input.Limit)
 	qb.SetOffset(input.Offset)
 
@@ -153,15 +161,16 @@ func (l *LibraryAppDB) GetLoanByID(ctx context.Context, id int) (*libraryapp.Loa
 	return &lo, nil
 }
 
-func (l *LibraryAppDB) CreateLoan(ctx context.Context, input loan.CreateRequest) (*libraryapp.Loan, error) {
-	q := "INSERT INTO loan (user_id, book_id, library_id, staff_id, loan_date, due_date, return_date) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, user_id, book_id, library_id, staff_id, loan_date, due_date, return_date, created_at, updated_at, deleted_at;"
-	args := []any{input.UserID, input.BookID, input.LibraryID, input.StaffID, input.LoanDate, input.DueDate, input.ReturnDate}
+func (l *LibraryAppDB) CreateLoan(ctx context.Context, input loan.CreateRequest) (*cm.Loan, error) {
+	q := "INSERT INTO loans (library_book_id, subscription_id, staff_id, loan_date, due_date, return_date) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, library_book_id, subscription_id, staff_id, loan_date, due_date, return_date, created_at, updated_at, deleted_at;"
+	args := []any{input.LibraryBookID, input.SubscriptionID, input.StaffID, input.LoanDate, input.DueDate, input.ReturnDate}
 
 	row := l.db.QueryRowContext(ctx, q, args...)
 
-	var lo libraryapp.Loan
-	err := row.Scan(&lo.ID, &lo.UserID, &lo.BookID, &lo.LibraryID, &lo.StaffID, &lo.LoanDate, &lo.DueDate, &lo.ReturnDate, &lo.CreatedAt, &lo.UpdatedAt, &lo.DeletedAt)
+	var lo models.Loan
+	err := row.Scan(&lo.ID, &lo.LibraryBookID, &lo.SubscriptionID, &lo.StaffID, &lo.LoanDate, &lo.DueDate, &lo.ReturnDate, &lo.CreatedAt, &lo.UpdatedAt, &lo.DeletedAt)
 
+	// TODO: handle pg error (old code)
 	if err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			fmt.Println(pgErr.Detail)
@@ -181,5 +190,5 @@ func (l *LibraryAppDB) CreateLoan(ctx context.Context, input loan.CreateRequest)
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating loan", err)
 	}
 
-	return &lo, nil
+	return lo.ToCoreModel(), nil
 }

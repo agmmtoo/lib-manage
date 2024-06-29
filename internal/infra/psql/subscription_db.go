@@ -2,6 +2,8 @@ package psql
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	cm "github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/core/subscription"
@@ -53,6 +55,19 @@ func (l *LibraryAppDB) ListSubscriptions(ctx context.Context, input subscription
 	// if input.Name != "" {
 	// 	qb.AddClause("m.name ILIKE $%d", fmt.Sprintf("%%%s%%", input.Name))
 	// }
+
+	obParts := make([]string, len(input.OrderBy))
+	for i, ob := range input.OrderBy {
+		// Default to ASC if Direction is not specified
+		dir := "ASC"
+		if ob.Dir != "" {
+			dir = ob.Dir
+		}
+		obParts[i] = fmt.Sprintf("%s %s", ob.Col, dir)
+	}
+	ob := strings.Join(obParts, ", ")
+	qb.SetOrderBy(ob)
+
 	qb.SetLimit(input.Limit)
 	qb.SetOffset(input.Offset)
 	q, args := qb.Build()

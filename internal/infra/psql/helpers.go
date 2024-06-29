@@ -14,6 +14,7 @@ type QueryBuilder struct {
 	Offset       int
 	ParamCounter int
 	Cols         []string
+	OrderBy      string
 }
 
 func (qb *QueryBuilder) AddClause(clause string, params ...interface{}) {
@@ -33,6 +34,10 @@ func (qb *QueryBuilder) SetOffset(offset int) {
 	qb.Offset = offset
 }
 
+func (qb *QueryBuilder) SetOrderBy(ord string) {
+	qb.OrderBy = ord
+}
+
 func (qb *QueryBuilder) Build() (string, []interface{}) {
 	fields := "*"
 	if len(qb.Cols) > 0 {
@@ -43,6 +48,11 @@ func (qb *QueryBuilder) Build() (string, []interface{}) {
 	if len(qb.Clauses) > 0 {
 		query += " WHERE " + strings.Join(qb.Clauses, " AND ")
 	}
+
+	if qb.OrderBy != "" {
+		query += " ORDER BY " + qb.OrderBy
+	}
+
 	if qb.Limit > 0 {
 		query += fmt.Sprintf(" LIMIT $%d", len(qb.Params)+1)
 		qb.Params = append(qb.Params, qb.Limit)

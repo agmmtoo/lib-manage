@@ -99,7 +99,7 @@ func (s *Service) GetLoanByID(ctx context.Context, id int) (*http.Loan, error) {
 	return s.loan.GetByID(ctx, id)
 }
 
-func (s *Service) CreateLoan(ctx context.Context, input http.CreateLoanRequest) (*http.Loan, error) {
+func (s *Service) CreateLoan(ctx context.Context, input http.CreateLoanRequest) (*models.Loan, error) {
 	return s.loan.Create(ctx, input)
 }
 

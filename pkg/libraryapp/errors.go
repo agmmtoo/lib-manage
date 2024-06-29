@@ -42,4 +42,5 @@ const (
 	ErrCodeInternal           = "ERR_INTERNAL"
 	ErrCodeServiceUnavailable = "ERR_SERVICE_UNAVAILABLE"
 	ErrCodeNotImplemented     = "ERR_NOT_IMPLEMENTED"
+	ErrCodeBadRequest         = "ERR_BAD_REQUEST"
 )

@@ -21,6 +21,6 @@ CREATE TABLE IF NOT EXISTS libraries_books (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP,
-    UNIQUE (library_id, book_id, code)
+    UNIQUE (library_id, code)
 );
 `

@@ -26,7 +26,7 @@ type Servicer interface {
 
 	ListLoans(ctx context.Context, input ListLoansRequest) (*ListLoansResponse, error)
 	GetLoanByID(ctx context.Context, id int) (*Loan, error)
-	CreateLoan(ctx context.Context, input CreateLoanRequest) (*Loan, error)
+	CreateLoan(ctx context.Context, input CreateLoanRequest) (*models.Loan, error)
 
 	ListStaffs(ctx context.Context, input ListStaffsRequest) (*ListStaffsResponse, error)
 	GetStaffByID(ctx context.Context, id int) (*Staff, error)
@@ -140,15 +140,15 @@ type Loan struct {
 }
 
 type ListLoansRequest struct {
-	IDs        []int
-	Limit      int
-	Skip       int
-	Active     bool
-	UserIDs    []int
-	BookIDs    []int
-	LibraryIDs []int
-	StaffIDs   []int
-	DueDate    time.Time
+	IDs            []int
+	Limit          int
+	Skip           int
+	Active         bool
+	UserIDs        []int
+	LibraryBookIDs []int
+	LibraryIDs     []int
+	StaffIDs       []int
+	DueDate        time.Time
 
 	IncludeLibraryBook  bool
 	IncludeSubscription bool
@@ -158,13 +158,13 @@ type ListLoansRequest struct {
 type ListLoansResponse = ListResponse[models.Loan]
 
 type CreateLoanRequest struct {
-	ID        int        `json:"id"`
-	BookID    int        `json:"book_id"`
-	UserID    int        `json:"user_id"`
-	LibraryID int        `json:"library_id"`
-	StaffID   int        `json:"staff_id"`
-	LoanDate  *time.Time `json:"loan_date"`
-	DueDate   *time.Time `json:"due_date"`
+	UserID        int        `json:"user_id"`
+	LibraryID     int        `json:"library_id"`
+	LibraryBookID int        `json:"library_book_id"`
+	StaffID       int        `json:"staff_id"`
+	LoanDate      *time.Time `json:"loan_date"`
+	// NOTE: DueDate should be calculated based on the membership's duration days
+	// DueDate       *time.Time `json:"due_date"`
 }
 
 // DEPRECATED

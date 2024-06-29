@@ -97,6 +97,7 @@ func (s *Service) Create(ctx context.Context, input http.CreateSubscriptionReque
 
 type Storer interface {
 	ListSubscriptions(ctx context.Context, input ListRequest) (*ListResponse, error)
+	// GetSubscriptionByID(ctx context.Context, id int) (*models.Subscription, error)
 	CreateSubscription(ctx context.Context, input CreateRequest) (*models.Subscription, error)
 	// implemented by membership service
 	GetMembershipByID(ctx context.Context, id int) (*models.Membership, error)
@@ -109,6 +110,10 @@ type ListRequest struct {
 	ExpiryDate    *time.Time
 	Limit         int
 	Offset        int
+	OrderBy       []struct {
+		Col string
+		Dir string
+	}
 
 	ExpiredBefore *time.Time
 	ExpiredAfter  *time.Time
