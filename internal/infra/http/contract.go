@@ -13,16 +13,20 @@ type Servicer interface {
 	GetUserByID(ctx context.Context, id int) (*User, error)
 	CreateUser(ctx context.Context, input CreateUserRequest) (*User, error)
 
-	ListBooks(ctx context.Context, input ListBooksRequest) (*ListBooksResponse, error)
-	GetBookByID(ctx context.Context, id int) (*models.LibraryBook, error)
-	CreateBook(ctx context.Context, input CreateBookRequest) (*Book, error)
+	// ListBooks(ctx context.Context, input ListBooksRequest) (*ListBooksResponse, error)
+	// GetBookByID(ctx context.Context, id int) (*models.Book, error)
+	// CreateBook(ctx context.Context, input CreateBookRequest) (*models.Book, error)
+
+	ListLibraryBooks(ctx context.Context, input ListLibraryBooksRequest) (*ListBooksResponse, error)
+	GetLibraryBookByID(ctx context.Context, id int) (*models.LibraryBook, error)
+	CreateLibraryBook(ctx context.Context, input CreateLibraryBookRequest) (*models.LibraryBook, error)
 
 	ListLibraries(ctx context.Context, input ListLibrariesRequest) (*ListLibrariesResponse, error)
 	GetLibraryByID(ctx context.Context, id int) (*Library, error)
 	CreateLibrary(ctx context.Context, input CreateLibraryRequest) (*Library, error)
-	AssignLibraryStaff(ctx context.Context, input AssignLibraryStaffRequest) (*LibraryStaff, error)
-	RegisterLibraryBook(ctx context.Context, input RegisterLibraryBookRequest) (*LibraryBook, error)
-	RegisterLibraryBookBatch(ctx context.Context, input RegisterLibraryBookBatchRequest) (*RegisterLibraryBookBatchResponse, error)
+	// AssignLibraryStaff(ctx context.Context, input AssignLibraryStaffRequest) (*LibraryStaff, error)
+	// RegisterLibraryBook(ctx context.Context, input RegisterLibraryBookRequest) (*LibraryBook, error)
+	// RegisterLibraryBookBatch(ctx context.Context, input RegisterLibraryBookBatchRequest) (*RegisterLibraryBookBatchResponse, error)
 
 	ListLoans(ctx context.Context, input ListLoansRequest) (*ListLoansResponse, error)
 	GetLoanByID(ctx context.Context, id int) (*Loan, error)
@@ -74,7 +78,7 @@ type CreateUserRequest struct {
 	Password string `json:"password"`
 }
 
-type ListBooksRequest struct {
+type ListLibraryBooksRequest struct {
 	IDs        []int
 	Limit      int
 	Skip       int
@@ -85,16 +89,16 @@ type ListBooksRequest struct {
 
 type ListBooksResponse = ListResponse[models.LibraryBook]
 
-type Book struct {
-	ID        int        `json:"id"`
-	Title     string     `json:"title"`
-	Author    string     `json:"author"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `json:"deleted_at,omitempty"`
-}
+// type Book struct {
+// 	ID        int        `json:"id"`
+// 	Title     string     `json:"title"`
+// 	Author    string     `json:"author"`
+// 	CreatedAt time.Time  `json:"created_at"`
+// 	UpdatedAt time.Time  `json:"updated_at"`
+// 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+// }
 
-type CreateBookRequest struct {
+type CreateLibraryBookRequest struct {
 	Title  string `json:"title"`
 	Author string `json:"author"`
 }
@@ -133,10 +137,10 @@ type Loan struct {
 	UpdatedAt  time.Time  `json:"updated_at"`
 	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
 
-	User    *User    `json:"user,omitempty"`
-	Book    *Book    `json:"book,omitempty"`
-	Staff   *Staff   `json:"staff,omitempty"`
-	Library *Library `json:"library,omitempty"`
+	User    *User        `json:"user,omitempty"`
+	Book    *LibraryBook `json:"book,omitempty"`
+	Staff   *Staff       `json:"staff,omitempty"`
+	Library *Library     `json:"library,omitempty"`
 }
 
 type ListLoansRequest struct {

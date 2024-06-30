@@ -69,54 +69,54 @@ func (s *Service) Create(ctx context.Context, input http.CreateLibraryRequest) (
 	}, nil
 }
 
-func (s *Service) AssignStaff(ctx context.Context, input http.AssignLibraryStaffRequest) (*http.LibraryStaff, error) {
-	result, err := s.repo.CreateLibraryStaff(ctx, CreateLibraryStaffRequest{
-		LibraryID: input.LibraryID,
-		StaffID:   input.StaffID,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &http.LibraryStaff{
-		LibraryID: result.LibraryID,
-		StaffID:   result.StaffID,
-	}, nil
-}
+// func (s *Service) AssignStaff(ctx context.Context, input http.AssignLibraryStaffRequest) (*http.LibraryStaff, error) {
+// 	result, err := s.repo.CreateLibraryStaff(ctx, CreateLibraryStaffRequest{
+// 		LibraryID: input.LibraryID,
+// 		StaffID:   input.StaffID,
+// 	})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &http.LibraryStaff{
+// 		LibraryID: result.LibraryID,
+// 		StaffID:   result.StaffID,
+// 	}, nil
+// }
 
-func (s *Service) RegisterBook(ctx context.Context, input http.RegisterLibraryBookRequest) (*http.LibraryBook, error) {
-	result, err := s.repo.CreateLibraryBook(ctx, CreateLibraryBookRequest{
-		LibraryID: input.LibraryID,
-		BookID:    input.BookID,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &http.LibraryBook{
-		LibraryID: result.LibraryID,
-		BookID:    result.BookID,
-	}, nil
-}
+// func (s *Service) RegisterBook(ctx context.Context, input http.RegisterLibraryBookRequest) (*http.LibraryBook, error) {
+// 	result, err := s.repo.CreateLibraryBook(ctx, CreateLibraryBookRequest{
+// 		LibraryID: input.LibraryID,
+// 		BookID:    input.BookID,
+// 	})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &http.LibraryBook{
+// 		LibraryID: result.LibraryID,
+// 		BookID:    result.BookID,
+// 	}, nil
+// }
 
-func (s *Service) RegisterBookBatch(ctx context.Context, input http.RegisterLibraryBookBatchRequest) (*http.RegisterLibraryBookBatchResponse, error) {
-	var lbs []libraryapp.LibraryBook
-	for _, b := range input.BookIDs {
-		lbs = append(lbs, libraryapp.LibraryBook{
-			LibraryID: input.LibraryID,
-			BookID:    b,
-		})
-	}
+// func (s *Service) RegisterBookBatch(ctx context.Context, input http.RegisterLibraryBookBatchRequest) (*http.RegisterLibraryBookBatchResponse, error) {
+// 	var lbs []libraryapp.LibraryBook
+// 	for _, b := range input.BookIDs {
+// 		lbs = append(lbs, libraryapp.LibraryBook{
+// 			LibraryID: input.LibraryID,
+// 			BookID:    b,
+// 		})
+// 	}
 
-	result, err := s.repo.CreateLibraryBookBatch(ctx, lbs, CreateBatchOpt{
-		SkipConflict: input.SkipDuplicates,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &http.RegisterLibraryBookBatchResponse{
-		LibraryID:      input.LibraryID,
-		SuccessBookIDs: result.SuccessBookIDs,
-	}, nil
-}
+// 	result, err := s.repo.CreateLibraryBookBatch(ctx, lbs, CreateBatchOpt{
+// 		SkipConflict: input.SkipDuplicates,
+// 	})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &http.RegisterLibraryBookBatchResponse{
+// 		LibraryID:      input.LibraryID,
+// 		SuccessBookIDs: result.SuccessBookIDs,
+// 	}, nil
+// }
 
 func (s *Service) Count(ctx context.Context) (int, error) {
 	return s.repo.CountLibraries(ctx)
@@ -126,9 +126,9 @@ type Storer interface {
 	ListLibraries(ctx context.Context, input ListRequest) (*ListResponse, error)
 	GetLibraryByID(ctx context.Context, id int) (*libraryapp.Library, error)
 	CreateLibrary(ctx context.Context, input CreateRequest) (*libraryapp.Library, error)
-	CreateLibraryStaff(ctx context.Context, input CreateLibraryStaffRequest) (*libraryapp.LibraryStaff, error)
-	CreateLibraryBook(ctx context.Context, input CreateLibraryBookRequest) (*libraryapp.LibraryBook, error)
-	CreateLibraryBookBatch(ctx context.Context, input []libraryapp.LibraryBook, opt CreateBatchOpt) (*CreateBatchResponse, error)
+	// CreateLibraryStaff(ctx context.Context, input CreateLibraryStaffRequest) (*libraryapp.LibraryStaff, error)
+	// CreateLibraryBook(ctx context.Context, input CreateLibraryBookRequest) (*libraryapp.LibraryBook, error)
+	// CreateLibraryBookBatch(ctx context.Context, input []libraryapp.LibraryBook, opt CreateBatchOpt) (*CreateBatchResponse, error)
 	CountLibraries(ctx context.Context) (int, error)
 }
 

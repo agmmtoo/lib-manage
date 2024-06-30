@@ -67,16 +67,16 @@ func (s *Service) CreateUser(ctx context.Context, input http.CreateUserRequest) 
 	return s.user.Create(ctx, input)
 }
 
-func (s *Service) ListBooks(ctx context.Context, input http.ListBooksRequest) (*http.ListBooksResponse, error) {
-	return s.book.List(ctx, input)
+func (s *Service) ListLibraryBooks(ctx context.Context, input http.ListLibraryBooksRequest) (*http.ListBooksResponse, error) {
+	return s.book.ListLibraryBooks(ctx, input)
 }
 
-func (s *Service) GetBookByID(ctx context.Context, id int) (*models.LibraryBook, error) {
-	return s.book.GetByID(ctx, id)
+func (s *Service) GetLibraryBookByID(ctx context.Context, id int) (*models.LibraryBook, error) {
+	return s.book.GetLibraryBookByID(ctx, id)
 }
 
-func (s *Service) CreateBook(ctx context.Context, input http.CreateBookRequest) (*http.Book, error) {
-	return s.book.Create(ctx, input)
+func (s *Service) CreateLibraryBook(ctx context.Context, input http.CreateLibraryBookRequest) (*models.LibraryBook, error) {
+	return s.book.CreateLibraryBook(ctx, input)
 }
 
 func (s *Service) ListLibraries(ctx context.Context, input http.ListLibrariesRequest) (*http.ListLibrariesResponse, error) {
@@ -115,17 +115,17 @@ func (s *Service) CreateStaff(ctx context.Context, input http.CreateStaffRequest
 	return s.staff.Create(ctx, input)
 }
 
-func (s *Service) AssignLibraryStaff(ctx context.Context, input http.AssignLibraryStaffRequest) (*http.LibraryStaff, error) {
-	return s.library.AssignStaff(ctx, input)
-}
+// func (s *Service) AssignLibraryStaff(ctx context.Context, input http.AssignLibraryStaffRequest) (*http.LibraryStaff, error) {
+// 	return s.library.AssignStaff(ctx, input)
+// }
 
-func (s *Service) RegisterLibraryBook(ctx context.Context, input http.RegisterLibraryBookRequest) (*http.LibraryBook, error) {
-	return s.library.RegisterBook(ctx, input)
-}
+// func (s *Service) RegisterLibraryBook(ctx context.Context, input http.RegisterLibraryBookRequest) (*http.LibraryBook, error) {
+// 	return s.library.RegisterBook(ctx, input)
+// }
 
-func (s *Service) RegisterLibraryBookBatch(ctx context.Context, input http.RegisterLibraryBookBatchRequest) (*http.RegisterLibraryBookBatchResponse, error) {
-	return s.library.RegisterBookBatch(ctx, input)
-}
+// func (s *Service) RegisterLibraryBookBatch(ctx context.Context, input http.RegisterLibraryBookBatchRequest) (*http.RegisterLibraryBookBatchResponse, error) {
+// 	return s.library.RegisterBookBatch(ctx, input)
+// }
 
 func (s *Service) ListLibrarySettings(ctx context.Context, input http.ListSettingsRequest) (*http.ListSettingsResponse, error) {
 	return s.setting.List(ctx, input)

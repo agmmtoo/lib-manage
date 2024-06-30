@@ -127,29 +127,30 @@ func (l *LibraryAppDB) CreateLibraryStaff(ctx context.Context, input library.Cre
 	return &libStaff, nil
 }
 
-func (l *LibraryAppDB) CreateLibraryBook(ctx context.Context, input library.CreateLibraryBookRequest) (*libraryapp.LibraryBook, error) {
-	q := "INSERT INTO library_book (library_id, book_id) VALUES ($1, $2) RETURNING library_id, book_id, created_at, updated_at, deleted_at;"
-	args := []any{input.LibraryID, input.BookID}
+// FIXME: Duplicate code
+// func (l *LibraryAppDB) CreateLibraryBook(ctx context.Context, input library.CreateLibraryBookRequest) (*libraryapp.LibraryBook, error) {
+// 	q := "INSERT INTO library_book (library_id, book_id) VALUES ($1, $2) RETURNING library_id, book_id, created_at, updated_at, deleted_at;"
+// 	args := []any{input.LibraryID, input.BookID}
 
-	row := l.db.QueryRowContext(ctx, q, args...)
+// 	row := l.db.QueryRowContext(ctx, q, args...)
 
-	var libBook libraryapp.LibraryBook
-	err := row.Scan(&libBook.LibraryID, &libBook.BookID, &libBook.CreatedAt, &libBook.UpdatedAt, &libBook.DeletedAt)
-	if err != nil {
-		if strings.Contains(err.Error(), "library_book_library_id_fkey") {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "library not found", err)
-		}
-		if strings.Contains(err.Error(), "library_book_book_id_fkey") {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "book not found", err)
-		}
-		if strings.Contains(err.Error(), "library_book_pkey") {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBDuplicate, "book is already registered", err)
-		}
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating library book", err)
-	}
+// 	var libBook libraryapp.LibraryBook
+// 	err := row.Scan(&libBook.LibraryID, &libBook.BookID, &libBook.CreatedAt, &libBook.UpdatedAt, &libBook.DeletedAt)
+// 	if err != nil {
+// 		if strings.Contains(err.Error(), "library_book_library_id_fkey") {
+// 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "library not found", err)
+// 		}
+// 		if strings.Contains(err.Error(), "library_book_book_id_fkey") {
+// 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "book not found", err)
+// 		}
+// 		if strings.Contains(err.Error(), "library_book_pkey") {
+// 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBDuplicate, "book is already registered", err)
+// 		}
+// 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating library book", err)
+// 	}
 
-	return &libBook, nil
-}
+// 	return &libBook, nil
+// }
 
 func (l *LibraryAppDB) CreateLibraryBookBatch(ctx context.Context, input []libraryapp.LibraryBook, opt library.CreateBatchOpt) (*library.CreateBatchResponse, error) {
 	var successBookIDs []int

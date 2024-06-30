@@ -76,7 +76,7 @@ func (s *Service) Create(ctx context.Context, input http.CreateLoanRequest) (*am
 	}
 
 	// get library id from book
-	book, err := s.repo.GetBookByID(ctx, input.LibraryBookID)
+	book, err := s.repo.GetLibraryBookByID(ctx, input.LibraryBookID)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +192,7 @@ type Storer interface {
 	CreateLoan(ctx context.Context, input CreateRequest) (*models.Loan, error)
 
 	// implemented by book service
-	GetBookByID(ctx context.Context, id int) (*models.LibraryBook, error)
+	GetLibraryBookByID(ctx context.Context, id int) (*models.LibraryBook, error)
 	// implemented by staff service
 	GetStaffByID(ctx context.Context, id int) (*models.Staff, error)
 	// implemented by subscription service

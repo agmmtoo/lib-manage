@@ -6,7 +6,6 @@ import (
 	"github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
 	am "github.com/agmmtoo/lib-manage/internal/infra/http/models"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
 type Service struct {
@@ -17,8 +16,8 @@ func New(repo Storer) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) List(ctx context.Context, input http.ListBooksRequest) (*http.ListBooksResponse, error) {
-	result, err := s.repo.ListBooks(ctx, ListRequest{
+func (s *Service) ListLibraryBooks(ctx context.Context, input http.ListLibraryBooksRequest) (*http.ListBooksResponse, error) {
+	result, err := s.repo.ListLibraryBooks(ctx, ListRequest{
 		IDs:        input.IDs,
 		Title:      input.Title,
 		Author:     input.Author,
@@ -41,8 +40,8 @@ func (s *Service) List(ctx context.Context, input http.ListBooksRequest) (*http.
 	}, nil
 }
 
-func (s *Service) GetByID(ctx context.Context, id int) (*am.LibraryBook, error) {
-	b, err := s.repo.GetBookByID(ctx, id)
+func (s *Service) GetLibraryBookByID(ctx context.Context, id int) (*am.LibraryBook, error) {
+	b, err := s.repo.GetLibraryBookByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -50,22 +49,15 @@ func (s *Service) GetByID(ctx context.Context, id int) (*am.LibraryBook, error) 
 	return b.ToAPIModel(), nil
 }
 
-func (s *Service) Create(ctx context.Context, input http.CreateBookRequest) (*http.Book, error) {
-	result, err := s.repo.CreateBook(ctx, CreateRequest{
+func (s *Service) CreateLibraryBook(ctx context.Context, input http.CreateLibraryBookRequest) (*am.LibraryBook, error) {
+	result, err := s.repo.CreateLibraryBook(ctx, CreateRequest{
 		Title:  input.Title,
 		Arthor: input.Author,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &http.Book{
-		ID:        result.ID,
-		Title:     result.Title,
-		Author:    result.Author,
-		CreatedAt: result.CreatedAt,
-		UpdatedAt: result.UpdatedAt,
-		DeletedAt: result.DeletedAt,
-	}, nil
+	return result.ToAPIModel(), nil
 }
 
 func (s *Service) Count(ctx context.Context) (int, error) {
@@ -73,9 +65,9 @@ func (s *Service) Count(ctx context.Context) (int, error) {
 }
 
 type Storer interface {
-	ListBooks(ctx context.Context, input ListRequest) (*ListResponse, error)
-	GetBookByID(ctx context.Context, id int) (*models.LibraryBook, error)
-	CreateBook(ctx context.Context, input CreateRequest) (*libraryapp.Book, error)
+	ListLibraryBooks(ctx context.Context, input ListRequest) (*ListResponse, error)
+	GetLibraryBookByID(ctx context.Context, id int) (*models.LibraryBook, error)
+	CreateLibraryBook(ctx context.Context, input CreateRequest) (*models.LibraryBook, error)
 	CountBooks(ctx context.Context) (int, error)
 }
 
@@ -94,6 +86,8 @@ type ListResponse struct {
 }
 
 type CreateRequest struct {
-	Title  string
-	Arthor string
+	Title         string
+	Arthor        string
+	SubCategoryID *int
+	Code          string
 }

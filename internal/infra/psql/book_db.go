@@ -11,7 +11,7 @@ import (
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
-func (l *LibraryAppDB) ListBooks(ctx context.Context, input book.ListRequest) (*book.ListResponse, error) {
+func (l *LibraryAppDB) ListLibraryBooks(ctx context.Context, input book.ListRequest) (*book.ListResponse, error) {
 
 	qb := &QueryBuilder{
 		Table:        "libraries_books lb",
@@ -99,7 +99,7 @@ func (l *LibraryAppDB) ListBooks(ctx context.Context, input book.ListRequest) (*
 	}, nil
 }
 
-func (l *LibraryAppDB) GetBookByID(ctx context.Context, id int) (*cm.LibraryBook, error) {
+func (l *LibraryAppDB) GetLibraryBookByID(ctx context.Context, id int) (*cm.LibraryBook, error) {
 	qb := &QueryBuilder{
 		Table:        "libraries_books lb",
 		ParamCounter: 1,
@@ -146,18 +146,18 @@ func (l *LibraryAppDB) GetBookByID(ctx context.Context, id int) (*cm.LibraryBook
 	return b.ToCoreModel(), nil
 }
 
-func (l *LibraryAppDB) CreateBook(ctx context.Context, input book.CreateRequest) (*libraryapp.Book, error) {
+func (l *LibraryAppDB) CreateLibraryBook(ctx context.Context, input book.CreateRequest) (*cm.LibraryBook, error) {
 	q := "INSERT INTO book (title, author) VALUES ($1, $2) returning id, title, author, created_at, updated_at, deleted_at;"
 	args := []any{input.Title, input.Arthor}
 
 	row := l.db.QueryRowContext(ctx, q, args...)
 
-	var b libraryapp.Book
-	err := row.Scan(&b.ID, &b.Title, &b.Author, &b.CreatedAt, &b.UpdatedAt, &b.DeletedAt)
+	var b models.LibraryBook
+	err := row.Scan(&b.ID, &b.BookTitle, &b.BookAuthor, &b.CreatedAt, &b.UpdatedAt, &b.DeletedAt)
 	if err != nil {
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating book", err)
 	}
-	return &b, nil
+	return b.ToCoreModel(), nil
 }
 
 func (l *LibraryAppDB) CountBooks(ctx context.Context) (int, error) {

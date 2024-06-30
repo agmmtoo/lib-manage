@@ -20,7 +20,7 @@ type Loan struct {
 	DeletedAt *time.Time
 
 	User    *User
-	Book    *Book
+	Book    *Library
 	Staff   *Staff
 	Library *Library
 }

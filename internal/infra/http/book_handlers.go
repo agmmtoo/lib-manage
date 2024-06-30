@@ -9,7 +9,7 @@ import (
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
 )
 
-func (h *LibraryAppHandler) ListBooks(w http.ResponseWriter, r *http.Request) error {
+func (h *LibraryAppHandler) ListLibraryBooks(w http.ResponseWriter, r *http.Request) error {
 	qLimit := r.URL.Query().Get("limit")
 	limit, err := strconv.Atoi(qLimit)
 	if err != nil {
@@ -47,7 +47,7 @@ func (h *LibraryAppHandler) ListBooks(w http.ResponseWriter, r *http.Request) er
 		}
 	}
 
-	books, err := h.service.ListBooks(r.Context(), ListBooksRequest{
+	books, err := h.service.ListLibraryBooks(r.Context(), ListLibraryBooksRequest{
 		IDs:        ids,
 		LibraryIDs: libraryIDs,
 		Title:      title,
@@ -62,14 +62,14 @@ func (h *LibraryAppHandler) ListBooks(w http.ResponseWriter, r *http.Request) er
 	return writeJSON(w, http.StatusOK, books)
 }
 
-func (h *LibraryAppHandler) GetBookByID(w http.ResponseWriter, r *http.Request) error {
+func (h *LibraryAppHandler) GetLibraryBookByID(w http.ResponseWriter, r *http.Request) error {
 	pathID := r.PathValue("id")
 	id, err := strconv.Atoi(pathID)
 	if err != nil {
 		return NewAPIError(http.StatusNotFound, ResourceNotFound("book"))
 	}
 
-	book, err := h.service.GetBookByID(r.Context(), id)
+	book, err := h.service.GetLibraryBookByID(r.Context(), id)
 	if err != nil {
 		return err
 	}
@@ -77,8 +77,8 @@ func (h *LibraryAppHandler) GetBookByID(w http.ResponseWriter, r *http.Request) 
 	return writeJSON(w, http.StatusOK, book)
 }
 
-func (h *LibraryAppHandler) CreateBook(w http.ResponseWriter, r *http.Request) error {
-	var req CreateBookRequest
+func (h *LibraryAppHandler) CreateLibraryBook(w http.ResponseWriter, r *http.Request) error {
+	var req CreateLibraryBookRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return InvalidJSON(err)
 	}
@@ -88,7 +88,7 @@ func (h *LibraryAppHandler) CreateBook(w http.ResponseWriter, r *http.Request) e
 	// 	return InvalidRequestData(err)
 	// }
 
-	book, err := h.service.CreateBook(r.Context(), req)
+	book, err := h.service.CreateLibraryBook(r.Context(), req)
 	if err != nil {
 		return err
 	}
