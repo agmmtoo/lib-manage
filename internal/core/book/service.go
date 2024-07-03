@@ -49,8 +49,8 @@ func (s *Service) GetLibraryBookByID(ctx context.Context, id int) (*am.LibraryBo
 	return b.ToAPIModel(), nil
 }
 
-func (s *Service) CreateLibraryBook(ctx context.Context, input http.CreateLibraryBookRequest) (*am.LibraryBook, error) {
-	result, err := s.repo.CreateLibraryBook(ctx, CreateRequest{
+func (s *Service) CreateBook(ctx context.Context, input http.CreateBookRequest) (*am.LibraryBook, error) {
+	result, err := s.repo.CreateBook(ctx, CreateRequest{
 		Title:  input.Title,
 		Arthor: input.Author,
 	})
@@ -67,7 +67,7 @@ func (s *Service) Count(ctx context.Context) (int, error) {
 type Storer interface {
 	ListLibraryBooks(ctx context.Context, input ListRequest) (*ListResponse, error)
 	GetLibraryBookByID(ctx context.Context, id int) (*models.LibraryBook, error)
-	CreateLibraryBook(ctx context.Context, input CreateRequest) (*models.LibraryBook, error)
+	CreateBook(ctx context.Context, input CreateRequest) (*models.LibraryBook, error)
 	CountBooks(ctx context.Context) (int, error)
 }
 

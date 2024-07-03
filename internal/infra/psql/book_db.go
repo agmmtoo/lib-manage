@@ -146,7 +146,7 @@ func (l *LibraryAppDB) GetLibraryBookByID(ctx context.Context, id int) (*cm.Libr
 	return b.ToCoreModel(), nil
 }
 
-func (l *LibraryAppDB) CreateLibraryBook(ctx context.Context, input book.CreateRequest) (*cm.LibraryBook, error) {
+func (l *LibraryAppDB) CreateBook(ctx context.Context, input book.CreateRequest) (*cm.LibraryBook, error) {
 	q := "INSERT INTO book (title, author) VALUES ($1, $2) returning id, title, author, created_at, updated_at, deleted_at;"
 	args := []any{input.Title, input.Arthor}
 

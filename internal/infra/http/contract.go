@@ -19,7 +19,7 @@ type Servicer interface {
 
 	ListLibraryBooks(ctx context.Context, input ListLibraryBooksRequest) (*ListBooksResponse, error)
 	GetLibraryBookByID(ctx context.Context, id int) (*models.LibraryBook, error)
-	CreateLibraryBook(ctx context.Context, input CreateLibraryBookRequest) (*models.LibraryBook, error)
+	CreateBook(ctx context.Context, input CreateBookRequest) (*models.LibraryBook, error)
 
 	ListLibraries(ctx context.Context, input ListLibrariesRequest) (*ListLibrariesResponse, error)
 	GetLibraryByID(ctx context.Context, id int) (*Library, error)
@@ -98,7 +98,7 @@ type ListBooksResponse = ListResponse[models.LibraryBook]
 // 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 // }
 
-type CreateLibraryBookRequest struct {
+type CreateBookRequest struct {
 	Title  string `json:"title"`
 	Author string `json:"author"`
 }

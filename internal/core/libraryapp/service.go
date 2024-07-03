@@ -75,8 +75,8 @@ func (s *Service) GetLibraryBookByID(ctx context.Context, id int) (*models.Libra
 	return s.book.GetLibraryBookByID(ctx, id)
 }
 
-func (s *Service) CreateLibraryBook(ctx context.Context, input http.CreateLibraryBookRequest) (*models.LibraryBook, error) {
-	return s.book.CreateLibraryBook(ctx, input)
+func (s *Service) CreateBook(ctx context.Context, input http.CreateBookRequest) (*models.LibraryBook, error) {
+	return s.book.CreateBook(ctx, input)
 }
 
 func (s *Service) ListLibraries(ctx context.Context, input http.ListLibrariesRequest) (*http.ListLibrariesResponse, error) {

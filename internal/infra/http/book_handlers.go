@@ -77,8 +77,8 @@ func (h *LibraryAppHandler) GetLibraryBookByID(w http.ResponseWriter, r *http.Re
 	return writeJSON(w, http.StatusOK, book)
 }
 
-func (h *LibraryAppHandler) CreateLibraryBook(w http.ResponseWriter, r *http.Request) error {
-	var req CreateLibraryBookRequest
+func (h *LibraryAppHandler) CreateBook(w http.ResponseWriter, r *http.Request) error {
+	var req CreateBookRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return InvalidJSON(err)
 	}
@@ -88,7 +88,7 @@ func (h *LibraryAppHandler) CreateLibraryBook(w http.ResponseWriter, r *http.Req
 	// 	return InvalidRequestData(err)
 	// }
 
-	book, err := h.service.CreateLibraryBook(r.Context(), req)
+	book, err := h.service.CreateBook(r.Context(), req)
 	if err != nil {
 		return err
 	}
