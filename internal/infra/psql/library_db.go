@@ -10,13 +10,10 @@ import (
 	cm "github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/psql/models"
 	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (l *LibraryAppDB) ListLibraries(ctx context.Context, input library.ListRequest) (*library.ListResponse, error) {
-	// q := "SELECT id, name, created_at, updated_at, deleted_at FROM library;"
-	// args := []any{}
 	qb := &QueryBuilder{
 		Table:        "libraries",
 		ParamCounter: 1,
@@ -59,7 +56,7 @@ func (l *LibraryAppDB) ListLibraries(ctx context.Context, input library.ListRequ
 }
 
 func (l *LibraryAppDB) GetLibraryByID(ctx context.Context, id int) (*libraryapp.Library, error) {
-	q := "SELECT id, name, created_at, updated_at, deleted_at FROM library WHERE id = $1;"
+	q := "SELECT id, name, created_at, updated_at, deleted_at FROM libraries WHERE id = $1;"
 	args := []any{id}
 
 	row := l.db.QueryRowContext(ctx, q, args...)
@@ -77,7 +74,7 @@ func (l *LibraryAppDB) GetLibraryByID(ctx context.Context, id int) (*libraryapp.
 }
 
 func (l *LibraryAppDB) CreateLibrary(ctx context.Context, input library.CreateRequest) (*libraryapp.Library, error) {
-	q := "INSERT INTO library (name) VALUES ($1) RETURNING id, name, created_at, updated_at, deleted_at;"
+	q := "INSERT INTO libraries (name) VALUES ($1) RETURNING id, name, created_at, updated_at, deleted_at;"
 	args := []any{input.Name}
 
 	row := l.db.QueryRowContext(ctx, q, args...)
@@ -88,19 +85,36 @@ func (l *LibraryAppDB) CreateLibrary(ctx context.Context, input library.CreateRe
 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating library", err)
 	}
 
-	// Create default setting for the library
-	qs := "INSERT INTO setting (library_id, key, value) VALUES ($1, $2, $3), ($1, $4, $5), ($1, $6, $7);"
-	_, err = l.db.ExecContext(ctx, qs, lib.ID,
-		config.SETTING_KEY_MAX_LOAN_PER_USER, config.SETTING_DEFAULT_MAX_LOAN_PER_USER,
-		config.SETTING_KEY_LOAN_PERIOD, config.SETTING_DEFAULT_LOAN_PERIOD,
-		config.SETTING_KEY_FINE_PER_DAY, config.SETTING_DEFAULT_FINE_PER_DAY,
+	return &lib, nil
+}
+
+func (l *LibraryAppDB) UpdateLibrary(ctx context.Context, id int, input library.UpdateRequest) (*cm.Library, error) {
+	uvm := make(map[string]any)
+	if input.Name != nil {
+		uvm["name"] = *input.Name
+	}
+	var (
+		uc   string
+		args = []any{
+			id,
+		}
 	)
 
-	if err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBExec, "error creating library settings", err)
+	for k, v := range uvm {
+		uc += fmt.Sprintf("%s = $%d, ", k, len(args)+1)
+		args = append(args, v)
 	}
 
-	return &lib, nil
+	q := fmt.Sprintf("UPDATE libraries SET %s updated_at = now() WHERE id = $1 RETURNING id, name, created_at, updated_at, deleted_at;", uc)
+
+	row := l.db.QueryRowContext(ctx, q, args...)
+
+	var lib models.Library
+	err := row.Scan(&lib.ID, &lib.Name, &lib.CreatedAt, &lib.UpdatedAt, &lib.DeletedAt)
+	if err != nil {
+		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error updating library", err)
+	}
+	return lib.ToCoreModel(), nil
 }
 
 func (l *LibraryAppDB) CreateLibraryStaff(ctx context.Context, input library.CreateLibraryStaffRequest) (*libraryapp.LibraryStaff, error) {

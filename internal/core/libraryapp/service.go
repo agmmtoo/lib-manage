@@ -91,6 +91,10 @@ func (s *Service) CreateLibrary(ctx context.Context, input http.CreateLibraryReq
 	return s.library.Create(ctx, input)
 }
 
+func (s *Service) UpdateLibrary(ctx context.Context, id int, input http.UpdateLibraryRequest) (*models.Library, error) {
+	return s.library.Update(ctx, id, input)
+}
+
 func (s *Service) ListLoans(ctx context.Context, input http.ListLoansRequest) (*http.ListLoansResponse, error) {
 	return s.loan.List(ctx, input)
 }

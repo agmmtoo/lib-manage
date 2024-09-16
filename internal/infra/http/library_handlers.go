@@ -82,6 +82,26 @@ func (h *LibraryAppHandler) CreateLibrary(w http.ResponseWriter, r *http.Request
 	return writeJSON(w, http.StatusCreated, library)
 }
 
+func (h *LibraryAppHandler) UpdateLibrary(w http.ResponseWriter, r *http.Request) error {
+	id := r.PathValue("id")
+	libID, err := strconv.Atoi(id)
+	if err != nil {
+		return NewAPIError(http.StatusNotFound, ResourceNotFound("library"))
+	}
+	var req UpdateLibraryRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return InvalidJSON(err)
+	}
+	defer r.Body.Close()
+
+	lib, err := h.service.UpdateLibrary(r.Context(), libID, req)
+	if err != nil {
+		return err
+	}
+
+	return writeJSON(w, http.StatusOK, lib)
+}
+
 // func (h *LibraryAppHandler) AssignLibraryStaff(w http.ResponseWriter, r *http.Request) error {
 // 	var req AssignLibraryStaffRequest
 // 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

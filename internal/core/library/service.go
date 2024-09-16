@@ -69,6 +69,20 @@ func (s *Service) Create(ctx context.Context, input http.CreateLibraryRequest) (
 	}, nil
 }
 
+func (s *Service) Update(ctx context.Context, id int, input http.UpdateLibraryRequest) (*am.Library, error) {
+	var name *string
+	if input.Name != "" {
+		name = &input.Name
+	}
+	result, err := s.repo.UpdateLibrary(ctx, id, UpdateRequest{
+		Name: name,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.ToAPIModel(), nil
+}
+
 // func (s *Service) AssignStaff(ctx context.Context, input http.AssignLibraryStaffRequest) (*http.LibraryStaff, error) {
 // 	result, err := s.repo.CreateLibraryStaff(ctx, CreateLibraryStaffRequest{
 // 		LibraryID: input.LibraryID,
@@ -126,6 +140,7 @@ type Storer interface {
 	ListLibraries(ctx context.Context, input ListRequest) (*ListResponse, error)
 	GetLibraryByID(ctx context.Context, id int) (*libraryapp.Library, error)
 	CreateLibrary(ctx context.Context, input CreateRequest) (*libraryapp.Library, error)
+	UpdateLibrary(ctx context.Context, id int, input UpdateRequest) (*models.Library, error)
 	// CreateLibraryStaff(ctx context.Context, input CreateLibraryStaffRequest) (*libraryapp.LibraryStaff, error)
 	// CreateLibraryBook(ctx context.Context, input CreateLibraryBookRequest) (*libraryapp.LibraryBook, error)
 	// CreateLibraryBookBatch(ctx context.Context, input []libraryapp.LibraryBook, opt CreateBatchOpt) (*CreateBatchResponse, error)
@@ -146,6 +161,10 @@ type ListResponse struct {
 
 type CreateRequest struct {
 	Name string
+}
+
+type UpdateRequest struct {
+	Name *string
 }
 
 type CreateLibraryStaffRequest struct {

@@ -24,6 +24,7 @@ type Servicer interface {
 	ListLibraries(ctx context.Context, input ListLibrariesRequest) (*ListLibrariesResponse, error)
 	GetLibraryByID(ctx context.Context, id int) (*Library, error)
 	CreateLibrary(ctx context.Context, input CreateLibraryRequest) (*Library, error)
+	UpdateLibrary(ctx context.Context, id int, input UpdateLibraryRequest) (*models.Library, error)
 	// AssignLibraryStaff(ctx context.Context, input AssignLibraryStaffRequest) (*LibraryStaff, error)
 	// RegisterLibraryBook(ctx context.Context, input RegisterLibraryBookRequest) (*LibraryBook, error)
 	// RegisterLibraryBookBatch(ctx context.Context, input RegisterLibraryBookBatchRequest) (*RegisterLibraryBookBatchResponse, error)
@@ -122,6 +123,10 @@ type ListLibrariesResponse = ListResponse[models.Library]
 
 type CreateLibraryRequest struct {
 	Name string `json:"name"`
+}
+
+type UpdateLibraryRequest struct {
+	Name string `json:"name,omitempty"`
 }
 
 type Loan struct {
