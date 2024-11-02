@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/agmmtoo/lib-manage/internal/core"
 	"github.com/agmmtoo/lib-manage/internal/core/book"
 	cm "github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/psql/models"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
 func (l *LibraryAppDB) ListLibraryBooks(ctx context.Context, input book.ListRequest) (*book.ListResponse, error) {
@@ -57,12 +57,12 @@ func (l *LibraryAppDB) ListLibraryBooks(ctx context.Context, input book.ListRequ
 	q, args := qb.Build()
 	rows, err := l.db.QueryContext(ctx, q, args...)
 	if err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing books", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error listing books", err)
 	}
 
 	defer rows.Close()
 
-	var books []*cm.LibraryBook
+	var books []cm.LibraryBook
 
 	for rows.Next() {
 		var b models.LibraryBook
@@ -74,14 +74,14 @@ func (l *LibraryAppDB) ListLibraryBooks(ctx context.Context, input book.ListRequ
 			&b.BookSubCategoryCategoryID, &b.BookSubCategoryCategoryName,
 		)
 		if err != nil {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning book", err)
+			return nil, core.NewCoreError(core.ErrCodeDBScan, "error scanning book", err)
 		}
 
 		books = append(books, b.ToCoreModel())
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing books", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error listing books", err)
 	}
 
 	var count int
@@ -138,12 +138,13 @@ func (l *LibraryAppDB) GetLibraryBookByID(ctx context.Context, id int) (*cm.Libr
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "book not found", err)
+			return nil, core.NewCoreError(core.ErrCodeDBNotFound, "book not found", err)
 		}
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error getting book", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error getting book", err)
 	}
 
-	return b.ToCoreModel(), nil
+	book := b.ToCoreModel()
+	return &book, nil
 }
 
 func (l *LibraryAppDB) CreateBook(ctx context.Context, input book.CreateRequest) (*cm.LibraryBook, error) {
@@ -155,9 +156,10 @@ func (l *LibraryAppDB) CreateBook(ctx context.Context, input book.CreateRequest)
 	var b models.LibraryBook
 	err := row.Scan(&b.ID, &b.BookTitle, &b.BookAuthor, &b.CreatedAt, &b.UpdatedAt, &b.DeletedAt)
 	if err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating book", err)
+		return nil, core.NewCoreError(core.ErrCodeDBScan, "error creating book", err)
 	}
-	return b.ToCoreModel(), nil
+	book := b.ToCoreModel()
+	return &book, nil
 }
 
 func (l *LibraryAppDB) CountBooks(ctx context.Context) (int, error) {

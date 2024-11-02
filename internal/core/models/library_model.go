@@ -15,8 +15,8 @@ type Library struct {
 	DeletedAt *time.Time
 }
 
-func (l *Library) ToAPIModel() *models.Library {
-	return &models.Library{
+func (l Library) ToAPIModel() models.Library {
+	return models.Library{
 		ID:        l.ID,
 		Name:      l.Name,
 		CreatedAt: l.CreatedAt,
@@ -28,4 +28,11 @@ func (l *Library) ToAPIModel() *models.Library {
 type PartialLibrary struct {
 	ID   int
 	Name string
+}
+
+func (l PartialLibrary) ToAPIModel() models.PartialLibrary {
+	return models.PartialLibrary{
+		ID:   l.ID,
+		Name: l.Name,
+	}
 }

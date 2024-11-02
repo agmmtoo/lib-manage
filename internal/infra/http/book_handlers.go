@@ -6,8 +6,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
+	"github.com/agmmtoo/lib-manage/internal/infra/config"
 )
+
+// func (h *LibraryAppHandler) ListBooks(w http.ResponseWriter, r *http.Request) error {
+// 	h.service.listboo
+// }
 
 func (h *LibraryAppHandler) ListLibraryBooks(w http.ResponseWriter, r *http.Request) error {
 	qLimit := r.URL.Query().Get("limit")

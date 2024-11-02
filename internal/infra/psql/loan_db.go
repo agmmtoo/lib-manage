@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/agmmtoo/lib-manage/internal/core"
 	"github.com/agmmtoo/lib-manage/internal/core/loan"
 	cm "github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/psql/models"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -84,7 +84,7 @@ func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*
 	query, params := qb.Build()
 	rows, err := l.db.QueryContext(ctx, query, params...)
 	if err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing loans", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error listing loans", err)
 	}
 
 	defer rows.Close()
@@ -129,13 +129,13 @@ func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*
 
 		err := rows.Scan(dests...)
 		if err != nil {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning loan", err)
+			return nil, core.NewCoreError(core.ErrCodeDBScan, "error scanning loan", err)
 		}
 		loans = append(loans, l.ToCoreModel())
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing loans", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error listing loans", err)
 	}
 
 	return &loan.ListResponse{
@@ -143,22 +143,45 @@ func (l *LibraryAppDB) ListLoans(ctx context.Context, input loan.ListRequest) (*
 	}, nil
 }
 
-func (l *LibraryAppDB) GetLoanByID(ctx context.Context, id int) (*libraryapp.Loan, error) {
-	q := "SELECT id, book_id, user_id, library_id, staff_id, loan_date, due_date, return_date, created_at, updated_at, deleted_at FROM loan WHERE id = $1;"
-	args := []any{id}
-
-	row := l.db.QueryRowContext(ctx, q, args...)
-
-	var lo libraryapp.Loan
-	err := row.Scan(&lo.ID, &lo.BookID, &lo.UserID, &lo.LibraryID, &lo.StaffID, &lo.LoanDate, &lo.DueDate, &lo.ReturnDate, &lo.CreatedAt, &lo.UpdatedAt, &lo.DeletedAt)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "loan not found", err)
-		}
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error getting loan", err)
+func (l *LibraryAppDB) GetLoanByID(ctx context.Context, id int) (*cm.Loan, error) {
+	qb := &QueryBuilder{
+		Table:        "loan l",
+		ParamCounter: 1,
+		Cols: []string{
+			"l.id", "l.library_book_id", "l.subscription_id", "l.staff_id", "l.loan_date", "l.due_date", "l.return_date", "l.created_at", "l.updated_at", "l.deleted_at",
+		},
 	}
 
-	return &lo, nil
+	qb.JoinTables = append(qb.JoinTables, "JOIN libraries_books lb ON l.library_book_id = lb.id JOIN libraries lbl ON lb.library_id = lbl.id JOIN books lbb ON lb.book_id = lbb.id JOIN sub_categories lbbsc ON lbb.sub_category_id = lbbsc.id JOIN categories lbbscc ON lbbsc.category_id = lbbscc.id")
+	qb.Cols = append(qb.Cols, "lb.id", "lb.library_id", "lb.book_id", "lb.code", "lbl.id", "lbl.name", "lbb.id", "lbb.title", "lbb.author", "lbb.sub_category_id", "lbbsc.id", "lbbsc.category_id", "lbbsc.name", "lbbscc.id", "lbbscc.name")
+
+	qb.JoinTables = append(qb.JoinTables, "JOIN subscriptions s ON l.subscription_id = s.id JOIN users su ON s.user_id = su.id JOIN memberships sm ON s.membership_id = sm.id JOIN libraries sml ON sm.library_id = sml.id")
+	qb.Cols = append(qb.Cols, "s.id", "s.user_id", "s.membership_id", "s.expiry_date", "su.id", "su.username", "sm.id", "sm.library_id", "sm.name", "sm.duration_days", "sm.active_loan_limit", "sm.fine_per_day", "sml.id", "sml.name")
+
+	qb.JoinTables = append(qb.JoinTables, "JOIN staffs st ON l.staff_id = st.id JOIN users stu ON st.user_id = stu.id JOIN libraries stl ON st.library_id = stl.id")
+	qb.Cols = append(qb.Cols, "st.id", "st.user_id", "st.library_id", "stu.id", "stu.username", "stl.id", "stl.name")
+
+	qb.AddClause("l.id = $%d", id)
+
+	q, params := qb.Build()
+
+	row := l.db.QueryRowContext(ctx, q, params...)
+
+	var lo models.Loan
+	err := row.Scan(
+		&lo.ID, &lo.LibraryBookID, &lo.SubscriptionID, &lo.StaffID, &lo.LoanDate, &lo.DueDate, &lo.ReturnDate, &lo.CreatedAt, &lo.UpdatedAt, &lo.DeletedAt,
+		&lo.LibraryBookID, &lo.LibraryBookLibraryID, &lo.LibraryBookBookID, &lo.LibraryBookCode, &lo.LibraryBookLibraryID, &lo.LibraryBookLibraryName, &lo.LibraryBookBookID, &lo.LibraryBookBookTitle, &lo.LibraryBookBookAuthor, &lo.LibraryBookBookSubCategoryID, &lo.LibraryBookBookSubCategoryID, &lo.LibraryBookBookSubCategoryCategoryID, &lo.LibraryBookBookSubCategoryName, &lo.LibraryBookBookSubCategoryCategoryID, &lo.LibraryBookBookSubCategoryCategoryName,
+		&lo.SubscriptionID, &lo.SubscriptionUserID, &lo.SubscriptionMembershipID, &lo.SubscriptionExpiryDate, &lo.SubscriptionUserID, &lo.SubscriptionUserUsername, &lo.SubscriptionMembershipID, &lo.SubscriptionMembershipLibraryID, &lo.SubscriptionMembershipName, &lo.SubscriptionMembershipDurationDays, &lo.SubscriptionMembershipActiveLoanLimit, &lo.SubscriptionMembershipFinePerDay, &lo.SubscriptionMembershipLibraryID, &lo.SubscriptionMembershipLibraryName,
+		&lo.StaffID, &lo.StaffUserID, &lo.StaffLibraryID, &lo.StaffUserID, &lo.StaffUserUsername, &lo.StaffLibraryID, &lo.StaffLibraryName,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, core.NewCoreError(core.ErrCodeDBNotFound, "loan not found", err)
+		}
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error getting loan", err)
+	}
+
+	return lo.ToCoreModel(), nil
 }
 
 func (l *LibraryAppDB) CreateLoan(ctx context.Context, input loan.CreateRequest) (*cm.Loan, error) {
@@ -175,19 +198,19 @@ func (l *LibraryAppDB) CreateLoan(ctx context.Context, input loan.CreateRequest)
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			fmt.Println(pgErr.Detail)
 			if pgErr.ConstraintName == "loan_user_id_fkey" {
-				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "user not found", err)
+				return nil, core.NewCoreError(core.ErrCodeDBNotFound, "user not found", err)
 			}
 			if pgErr.ConstraintName == "loan_library_id_staff_id_fkey" {
-				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "library or staff not found", err)
+				return nil, core.NewCoreError(core.ErrCodeDBNotFound, "library or staff not found", err)
 			}
 			if pgErr.ConstraintName == "loan_library_id_book_id_fkey" {
-				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "library or book not found", err)
+				return nil, core.NewCoreError(core.ErrCodeDBNotFound, "library or book not found", err)
 			}
 			if pgErr.ConstraintName == "loan_unique_active" {
-				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBDuplicate, "book already loaned", err)
+				return nil, core.NewCoreError(core.ErrCodeDBDuplicate, "book already loaned", err)
 			}
 		}
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating loan", err)
+		return nil, core.NewCoreError(core.ErrCodeDBScan, "error creating loan", err)
 	}
 
 	return lo.ToCoreModel(), nil

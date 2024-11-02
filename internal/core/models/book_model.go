@@ -42,7 +42,7 @@ type LibraryBook struct {
 	Library *PartialLibrary
 }
 
-func (lb *LibraryBook) ToAPIModel() *models.LibraryBook {
+func (lb LibraryBook) ToAPIModel() models.LibraryBook {
 
 	// TODO: implement method on source model
 	var sc *models.PartialSubCategory
@@ -58,7 +58,7 @@ func (lb *LibraryBook) ToAPIModel() *models.LibraryBook {
 		}
 	}
 
-	return &models.LibraryBook{
+	return models.LibraryBook{
 		ID:        lb.ID,
 		Code:      lb.Code,
 		LibraryID: lb.LibraryID,

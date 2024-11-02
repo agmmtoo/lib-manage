@@ -8,7 +8,6 @@ import (
 	"github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
 	am "github.com/agmmtoo/lib-manage/internal/infra/http/models"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
 type Service struct {
@@ -31,7 +30,7 @@ func (s *Service) List(ctx context.Context, input http.ListUsersRequest) (*http.
 		return nil, err
 	}
 
-	var users []*am.User
+	var users []am.User
 	for _, u := range result.Users {
 		users = append(users, u.ToAPIModel())
 	}
@@ -42,13 +41,13 @@ func (s *Service) List(ctx context.Context, input http.ListUsersRequest) (*http.
 	}, nil
 }
 
-func (s *Service) GetByID(ctx context.Context, id int) (*http.User, error) {
+func (s *Service) GetByID(ctx context.Context, id int) (*am.User, error) {
 	result, err := s.repo.GetUserByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return &http.User{
+	return &am.User{
 		ID:        result.ID,
 		Username:  result.Username,
 		CreatedAt: result.CreatedAt,
@@ -57,7 +56,7 @@ func (s *Service) GetByID(ctx context.Context, id int) (*http.User, error) {
 	}, nil
 }
 
-func (s *Service) Create(ctx context.Context, input http.CreateUserRequest) (*http.User, error) {
+func (s *Service) Create(ctx context.Context, input http.CreateUserRequest) (*am.User, error) {
 	// hash the password
 	h := sha256.New()
 	h.Write([]byte(input.Password))
@@ -73,7 +72,7 @@ func (s *Service) Create(ctx context.Context, input http.CreateUserRequest) (*ht
 		return nil, err
 	}
 
-	return &http.User{
+	return &am.User{
 		ID:        result.ID,
 		Username:  result.Username,
 		CreatedAt: result.CreatedAt,
@@ -90,8 +89,8 @@ func (s *Service) Count(ctx context.Context) (int, error) {
 // Implemented by the database layer, `internal/infra/psql`
 type Storer interface {
 	ListUsers(ctx context.Context, input ListRequest) (*ListResponse, error)
-	GetUserByID(ctx context.Context, id int) (*libraryapp.User, error)
-	CreateUser(ctx context.Context, input CreateRequest) (*libraryapp.User, error)
+	GetUserByID(ctx context.Context, id int) (*models.User, error)
+	CreateUser(ctx context.Context, input CreateRequest) (*models.User, error)
 	CountUsers(ctx context.Context) (int, error)
 }
 

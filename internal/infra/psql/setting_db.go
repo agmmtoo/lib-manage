@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/agmmtoo/lib-manage/internal/core"
+	cm "github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/core/setting"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
+	"github.com/agmmtoo/lib-manage/internal/infra/psql/models"
 )
 
 func (l *LibraryAppDB) GetSettingValue(ctx context.Context, libraryID int, key string) (string, error) {
@@ -19,9 +21,9 @@ func (l *LibraryAppDB) GetSettingValue(ctx context.Context, libraryID int, key s
 	err := row.Scan(&value)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "setting not found", err)
+			return "", core.NewCoreError(core.ErrCodeDBNotFound, "setting not found", err)
 		}
-		return "", libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error getting setting", err)
+		return "", core.NewCoreError(core.ErrCodeDBQuery, "error getting setting", err)
 	}
 
 	return value, nil
@@ -49,22 +51,22 @@ func (l *LibraryAppDB) ListSettings(ctx context.Context, input setting.ListReque
 
 	rows, err := l.db.QueryContext(ctx, query, params...)
 	if err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing settings", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error listing settings", err)
 	}
 	defer rows.Close()
 
-	var settings []*libraryapp.Setting
+	var settings []cm.Setting
 	for rows.Next() {
-		var s libraryapp.Setting
+		var s models.Setting
 		err := rows.Scan(&s.ID, &s.LibraryID, &s.Key, &s.Value, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
 		if err != nil {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning setting", err)
+			return nil, core.NewCoreError(core.ErrCodeDBScan, "error scanning setting", err)
 		}
-		settings = append(settings, &s)
+		settings = append(settings, s.ToCoreModel())
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing settings", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error listing settings", err)
 	}
 
 	return &setting.ListResponse{
@@ -73,19 +75,19 @@ func (l *LibraryAppDB) ListSettings(ctx context.Context, input setting.ListReque
 
 }
 
-func (l *LibraryAppDB) UpdateSettingValues(ctx context.Context, input []setting.UpdateRequest) ([]*libraryapp.Setting, error) {
+func (l *LibraryAppDB) UpdateSettingValues(ctx context.Context, input []setting.UpdateRequest) ([]cm.Setting, error) {
 	q := "UPDATE setting SET value = $1 WHERE id = $2 RETURNING id, library_id, key, value, created_at, updated_at, deleted_at;"
-	var result []*libraryapp.Setting
+	var result []cm.Setting
 	for _, st := range input {
-		var s libraryapp.Setting
+		var s models.Setting
 		args := []any{st.Value, st.ID}
 		row := l.db.QueryRowContext(ctx, q, args...)
 
 		err := row.Scan(&s.ID, &s.LibraryID, &s.Key, &s.Value, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
 		if err != nil {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error updating setting", err)
+			return nil, core.NewCoreError(core.ErrCodeDBQuery, "error updating setting", err)
 		}
-		result = append(result, &s)
+		result = append(result, s.ToCoreModel())
 	}
 
 	return result, nil

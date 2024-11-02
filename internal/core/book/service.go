@@ -29,7 +29,7 @@ func (s *Service) ListLibraryBooks(ctx context.Context, input http.ListLibraryBo
 		return nil, err
 	}
 
-	var books []*am.LibraryBook
+	var books []am.LibraryBook
 	for _, b := range result.Books {
 		books = append(books, b.ToAPIModel())
 	}
@@ -46,18 +46,22 @@ func (s *Service) GetLibraryBookByID(ctx context.Context, id int) (*am.LibraryBo
 		return nil, err
 	}
 
-	return b.ToAPIModel(), nil
+	result := b.ToAPIModel()
+
+	return &result, nil
 }
 
 func (s *Service) CreateBook(ctx context.Context, input http.CreateBookRequest) (*am.LibraryBook, error) {
-	result, err := s.repo.CreateBook(ctx, CreateRequest{
+	b, err := s.repo.CreateBook(ctx, CreateRequest{
 		Title:  input.Title,
 		Arthor: input.Author,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return result.ToAPIModel(), nil
+
+	result := b.ToAPIModel()
+	return &result, nil
 }
 
 func (s *Service) Count(ctx context.Context) (int, error) {
@@ -81,7 +85,7 @@ type ListRequest struct {
 }
 
 type ListResponse struct {
-	Books []*models.LibraryBook
+	Books []models.LibraryBook
 	Total int
 }
 

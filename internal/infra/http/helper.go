@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
+	"github.com/agmmtoo/lib-manage/internal/core"
 )
 
 type APIError struct {
@@ -47,18 +47,18 @@ type APIFunc func(w http.ResponseWriter, r *http.Request) error
 func MakeHandler(h APIFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := h(w, r); err != nil {
-			var coreErr *libraryapp.CoreError
+			var coreErr *core.CoreError
 			if errors.As(err, &coreErr); coreErr != nil {
 				statusCode := http.StatusBadRequest
 				switch coreErr.Code {
 
-				case libraryapp.ErrCodeDBNotFound:
+				case core.ErrCodeDBNotFound:
 					statusCode = http.StatusNotFound
 
-				case libraryapp.ErrCodeDBScan,
-					libraryapp.ErrCodeDBExec,
-					libraryapp.ErrCodeDBDuplicate,
-					libraryapp.ErrCodeDBQuery:
+				case core.ErrCodeDBScan,
+					core.ErrCodeDBExec,
+					core.ErrCodeDBDuplicate,
+					core.ErrCodeDBQuery:
 					statusCode = http.StatusBadRequest
 				}
 
@@ -77,7 +77,7 @@ func MakeHandler(h APIFunc) http.HandlerFunc {
 				writeJSON(w, apiErr.StatusCode, errResp)
 			} else {
 				errResp := map[string]any{
-					"code":    libraryapp.ErrCodeInternal,
+					"code":    core.ErrCodeInternal,
 					"message": err.Error(),
 				}
 				log.Println("hi", err)

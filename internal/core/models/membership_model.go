@@ -21,7 +21,7 @@ type Membership struct {
 	Library *PartialLibrary
 }
 
-func (m *Membership) ToAPIModel() *models.Membership {
+func (m Membership) ToAPIModel() models.Membership {
 	var l *models.PartialLibrary
 	if m.Library != nil {
 		l = &models.PartialLibrary{
@@ -30,7 +30,7 @@ func (m *Membership) ToAPIModel() *models.Membership {
 		}
 	}
 
-	return &models.Membership{
+	return models.Membership{
 		ID:              m.ID,
 		LibraryID:       m.LibraryID,
 		Name:            m.Name,

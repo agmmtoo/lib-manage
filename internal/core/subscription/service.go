@@ -35,7 +35,7 @@ func (s *Service) List(ctx context.Context, input http.ListSubscriptionsRequest)
 		return nil, err
 	}
 
-	var Subscriptions []*am.Subscription
+	var Subscriptions []am.Subscription
 	for _, m := range result.Subscriptions {
 		Subscriptions = append(Subscriptions, m.ToAPIModel())
 	}
@@ -91,8 +91,8 @@ func (s *Service) Create(ctx context.Context, input http.CreateSubscriptionReque
 	if err != nil {
 		return nil, err
 	}
-
-	return result.ToAPIModel(), nil
+	sub := result.ToAPIModel()
+	return &sub, nil
 }
 
 type Storer interface {

@@ -24,7 +24,7 @@ type Loan struct {
 	Subscription *PartialSubscription
 }
 
-func (l *Loan) ToAPIModel() *models.Loan {
+func (l Loan) ToAPIModel() models.Loan {
 
 	var lb *models.PartialLibraryBook
 	if l.LibraryBook != nil {
@@ -145,7 +145,7 @@ func (l *Loan) ToAPIModel() *models.Loan {
 		}
 	}
 
-	return &models.Loan{
+	return models.Loan{
 		ID:             l.ID,
 		LibraryBookID:  l.LibraryBookID,
 		SubscriptionID: l.SubscriptionID,

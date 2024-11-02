@@ -3,8 +3,9 @@ package setting
 import (
 	"context"
 
+	"github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
+	am "github.com/agmmtoo/lib-manage/internal/infra/http/models"
 )
 
 type Service struct {
@@ -28,9 +29,9 @@ func (s *Service) List(ctx context.Context, input http.ListSettingsRequest) (*ht
 		return nil, err
 	}
 
-	var settings []*http.Setting
+	var settings []am.Setting
 	for _, st := range result.Settings {
-		settings = append(settings, &http.Setting{
+		settings = append(settings, am.Setting{
 			ID:        st.ID,
 			LibraryID: st.LibraryID,
 			Key:       st.Key,
@@ -46,7 +47,7 @@ func (s *Service) List(ctx context.Context, input http.ListSettingsRequest) (*ht
 	}, nil
 }
 
-func (s *Service) Update(ctx context.Context, input http.UpdateSettingsRequest) ([]*http.Setting, error) {
+func (s *Service) Update(ctx context.Context, input http.UpdateSettingsRequest) ([]am.Setting, error) {
 	updateReq := make([]UpdateRequest, 0, len(input))
 	for _, st := range input {
 		updateReq = append(updateReq, UpdateRequest{
@@ -58,17 +59,10 @@ func (s *Service) Update(ctx context.Context, input http.UpdateSettingsRequest) 
 	if err != nil {
 		return nil, err
 	}
-	updateRes := make([]*http.Setting, 0, len(results))
+	updateRes := make([]am.Setting, 0, len(results))
 	for _, st := range results {
-		updateRes = append(updateRes, &http.Setting{
-			ID:        st.ID,
-			LibraryID: st.LibraryID,
-			Key:       st.Key,
-			Value:     st.Value,
-			CreatedAt: st.CreatedAt,
-			UpdatedAt: st.UpdatedAt,
-			DeletedAt: st.DeletedAt,
-		})
+		setting := st.ToAPIModel()
+		updateRes = append(updateRes, setting)
 	}
 
 	return updateRes, nil
@@ -77,7 +71,7 @@ func (s *Service) Update(ctx context.Context, input http.UpdateSettingsRequest) 
 type Storer interface {
 	GetSettingValue(ctx context.Context, libraryID int, key string) (string, error)
 	ListSettings(ctx context.Context, input ListRequest) (*ListResponse, error)
-	UpdateSettingValues(ctx context.Context, input []UpdateRequest) ([]*libraryapp.Setting, error)
+	UpdateSettingValues(ctx context.Context, input []UpdateRequest) ([]models.Setting, error)
 }
 
 type ListRequest struct {
@@ -89,7 +83,7 @@ type ListRequest struct {
 }
 
 type ListResponse struct {
-	Settings []*libraryapp.Setting
+	Settings []models.Setting
 	Total    int
 }
 

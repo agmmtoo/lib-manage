@@ -1,4 +1,4 @@
-package libraryapp
+package core
 
 type CoreError struct {
 	Code   string

@@ -12,7 +12,7 @@ import (
 	"github.com/agmmtoo/lib-manage/internal/core/subscription"
 	"github.com/agmmtoo/lib-manage/internal/core/user"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
-	"github.com/agmmtoo/lib-manage/internal/infra/http/models"
+	am "github.com/agmmtoo/lib-manage/internal/infra/http/models"
 )
 
 // Service implements http Service interface
@@ -59,11 +59,11 @@ func (s *Service) ListUsers(ctx context.Context, input http.ListUsersRequest) (*
 	return s.user.List(ctx, input)
 }
 
-func (s *Service) GetUserByID(ctx context.Context, id int) (*http.User, error) {
+func (s *Service) GetUserByID(ctx context.Context, id int) (*am.User, error) {
 	return s.user.GetByID(ctx, id)
 }
 
-func (s *Service) CreateUser(ctx context.Context, input http.CreateUserRequest) (*http.User, error) {
+func (s *Service) CreateUser(ctx context.Context, input http.CreateUserRequest) (*am.User, error) {
 	return s.user.Create(ctx, input)
 }
 
@@ -71,11 +71,11 @@ func (s *Service) ListLibraryBooks(ctx context.Context, input http.ListLibraryBo
 	return s.book.ListLibraryBooks(ctx, input)
 }
 
-func (s *Service) GetLibraryBookByID(ctx context.Context, id int) (*models.LibraryBook, error) {
+func (s *Service) GetLibraryBookByID(ctx context.Context, id int) (*am.LibraryBook, error) {
 	return s.book.GetLibraryBookByID(ctx, id)
 }
 
-func (s *Service) CreateBook(ctx context.Context, input http.CreateBookRequest) (*models.LibraryBook, error) {
+func (s *Service) CreateBook(ctx context.Context, input http.CreateBookRequest) (*am.LibraryBook, error) {
 	return s.book.CreateBook(ctx, input)
 }
 
@@ -83,15 +83,15 @@ func (s *Service) ListLibraries(ctx context.Context, input http.ListLibrariesReq
 	return s.library.List(ctx, input)
 }
 
-func (s *Service) GetLibraryByID(ctx context.Context, id int) (*http.Library, error) {
+func (s *Service) GetLibraryByID(ctx context.Context, id int) (*am.Library, error) {
 	return s.library.GetByID(ctx, id)
 }
 
-func (s *Service) CreateLibrary(ctx context.Context, input http.CreateLibraryRequest) (*http.Library, error) {
+func (s *Service) CreateLibrary(ctx context.Context, input http.CreateLibraryRequest) (*am.Library, error) {
 	return s.library.Create(ctx, input)
 }
 
-func (s *Service) UpdateLibrary(ctx context.Context, id int, input http.UpdateLibraryRequest) (*models.Library, error) {
+func (s *Service) UpdateLibrary(ctx context.Context, id int, input http.UpdateLibraryRequest) (*am.Library, error) {
 	return s.library.Update(ctx, id, input)
 }
 
@@ -99,11 +99,11 @@ func (s *Service) ListLoans(ctx context.Context, input http.ListLoansRequest) (*
 	return s.loan.List(ctx, input)
 }
 
-func (s *Service) GetLoanByID(ctx context.Context, id int) (*http.Loan, error) {
+func (s *Service) GetLoanByID(ctx context.Context, id int) (*am.Loan, error) {
 	return s.loan.GetByID(ctx, id)
 }
 
-func (s *Service) CreateLoan(ctx context.Context, input http.CreateLoanRequest) (*models.Loan, error) {
+func (s *Service) CreateLoan(ctx context.Context, input http.CreateLoanRequest) (*am.Loan, error) {
 	return s.loan.Create(ctx, input)
 }
 
@@ -111,23 +111,23 @@ func (s *Service) ListStaffs(ctx context.Context, input http.ListStaffsRequest) 
 	return s.staff.List(ctx, input)
 }
 
-func (s *Service) GetStaffByID(ctx context.Context, id int) (*http.Staff, error) {
+func (s *Service) GetStaffByID(ctx context.Context, id int) (*am.Staff, error) {
 	return s.staff.GetByID(ctx, id)
 }
 
-func (s *Service) CreateStaff(ctx context.Context, input http.CreateStaffRequest) (*http.Staff, error) {
+func (s *Service) CreateStaff(ctx context.Context, input http.CreateStaffRequest) (*am.Staff, error) {
 	return s.staff.Create(ctx, input)
 }
 
-// func (s *Service) AssignLibraryStaff(ctx context.Context, input http.AssignLibraryStaffRequest) (*http.LibraryStaff, error) {
+// func (s *Service) AssignLibraryStaff(ctx context.Context, input http.AssignLibraryStaffRequest) (*am.LibraryStaff, error) {
 // 	return s.library.AssignStaff(ctx, input)
 // }
 
-// func (s *Service) RegisterLibraryBook(ctx context.Context, input http.RegisterLibraryBookRequest) (*http.LibraryBook, error) {
+// func (s *Service) RegisterLibraryBook(ctx context.Context, input http.RegisterLibraryBookRequest) (*am.LibraryBook, error) {
 // 	return s.library.RegisterBook(ctx, input)
 // }
 
-// func (s *Service) RegisterLibraryBookBatch(ctx context.Context, input http.RegisterLibraryBookBatchRequest) (*http.RegisterLibraryBookBatchResponse, error) {
+// func (s *Service) RegisterLibraryBookBatch(ctx context.Context, input http.RegisterLibraryBookBatchRequest) (*am.RegisterLibraryBookBatchResponse, error) {
 // 	return s.library.RegisterBookBatch(ctx, input)
 // }
 
@@ -135,7 +135,7 @@ func (s *Service) ListLibrarySettings(ctx context.Context, input http.ListSettin
 	return s.setting.List(ctx, input)
 }
 
-func (s *Service) UpdateLibrarySettings(ctx context.Context, input http.UpdateSettingsRequest) ([]*http.Setting, error) {
+func (s *Service) UpdateLibrarySettings(ctx context.Context, input http.UpdateSettingsRequest) ([]am.Setting, error) {
 	return s.setting.Update(ctx, input)
 }
 
@@ -147,23 +147,23 @@ func (s *Service) ListSubscriptions(ctx context.Context, input http.ListSubscrip
 	return s.subscription.List(ctx, input)
 }
 
-func (s *Service) CreateSubscription(ctx context.Context, input http.CreateSubscriptionRequest) (*models.Subscription, error) {
+func (s *Service) CreateSubscription(ctx context.Context, input http.CreateSubscriptionRequest) (*am.Subscription, error) {
 	return s.subscription.Create(ctx, input)
 }
 
-func (s *Service) GetStats(ctx context.Context) (*http.Stats, error) {
-	b, _ := s.book.Count(ctx)
-	l, _ := s.library.Count(ctx)
-	u, _ := s.user.Count(ctx)
-	st, _ := s.staff.Count(ctx)
+// func (s *Service) GetStats(ctx context.Context) (*am.Stats, error) {
+// 	b, _ := s.book.Count(ctx)
+// 	l, _ := s.library.Count(ctx)
+// 	u, _ := s.user.Count(ctx)
+// 	st, _ := s.staff.Count(ctx)
 
-	return &http.Stats{
-		Books:     b,
-		Libraries: l,
-		Users:     u,
-		Staffs:    st,
-	}, nil
-}
+// 	return &http.Stats{
+// 		Books:     b,
+// 		Libraries: l,
+// 		Users:     u,
+// 		Staffs:    st,
+// 	}, nil
+// }
 
 // func (s *Service) GetUsersByBookName(ctx context.Context, name string) ([]*libraryapp.User, error) {
 // 	books, err := s.bookService.GetList(ctx, BookGetListInput{

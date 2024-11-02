@@ -4,12 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 
+	"github.com/agmmtoo/lib-manage/internal/core"
 	"github.com/agmmtoo/lib-manage/internal/core/library"
 	cm "github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/psql/models"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -31,7 +30,7 @@ func (l *LibraryAppDB) ListLibraries(ctx context.Context, input library.ListRequ
 
 	rows, err := l.db.QueryContext(ctx, q, args...)
 	if err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing libraries", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error listing libraries", err)
 	}
 
 	defer rows.Close()
@@ -41,13 +40,13 @@ func (l *LibraryAppDB) ListLibraries(ctx context.Context, input library.ListRequ
 		var lib models.Library
 		err := rows.Scan(&lib.ID, &lib.Name, &lib.CreatedAt, &lib.UpdatedAt, &lib.DeletedAt)
 		if err != nil {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning library", err)
+			return nil, core.NewCoreError(core.ErrCodeDBScan, "error scanning library", err)
 		}
 		libraries = append(libraries, lib.ToCoreModel())
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing libraries", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error listing libraries", err)
 	}
 
 	return &library.ListResponse{
@@ -55,37 +54,37 @@ func (l *LibraryAppDB) ListLibraries(ctx context.Context, input library.ListRequ
 	}, nil
 }
 
-func (l *LibraryAppDB) GetLibraryByID(ctx context.Context, id int) (*libraryapp.Library, error) {
+func (l *LibraryAppDB) GetLibraryByID(ctx context.Context, id int) (*cm.Library, error) {
 	q := "SELECT id, name, created_at, updated_at, deleted_at FROM libraries WHERE id = $1;"
 	args := []any{id}
 
 	row := l.db.QueryRowContext(ctx, q, args...)
 
-	var lib libraryapp.Library
+	var lib models.Library
 	err := row.Scan(&lib.ID, &lib.Name, &lib.CreatedAt, &lib.UpdatedAt, &lib.DeletedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "library not found", err)
+			return nil, core.NewCoreError(core.ErrCodeDBNotFound, "library not found", err)
 		}
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error getting library", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error getting library", err)
 	}
 
-	return &lib, nil
+	return lib.ToCoreModel(), nil
 }
 
-func (l *LibraryAppDB) CreateLibrary(ctx context.Context, input library.CreateRequest) (*libraryapp.Library, error) {
+func (l *LibraryAppDB) CreateLibrary(ctx context.Context, input library.CreateRequest) (*cm.Library, error) {
 	q := "INSERT INTO libraries (name) VALUES ($1) RETURNING id, name, created_at, updated_at, deleted_at;"
 	args := []any{input.Name}
 
 	row := l.db.QueryRowContext(ctx, q, args...)
 
-	var lib libraryapp.Library
+	var lib models.Library
 	err := row.Scan(&lib.ID, &lib.Name, &lib.CreatedAt, &lib.UpdatedAt, &lib.DeletedAt)
 	if err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating library", err)
+		return nil, core.NewCoreError(core.ErrCodeDBScan, "error creating library", err)
 	}
 
-	return &lib, nil
+	return lib.ToCoreModel(), nil
 }
 
 func (l *LibraryAppDB) UpdateLibrary(ctx context.Context, id int, input library.UpdateRequest) (*cm.Library, error) {
@@ -112,61 +111,37 @@ func (l *LibraryAppDB) UpdateLibrary(ctx context.Context, id int, input library.
 	var lib models.Library
 	err := row.Scan(&lib.ID, &lib.Name, &lib.CreatedAt, &lib.UpdatedAt, &lib.DeletedAt)
 	if err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error updating library", err)
+		return nil, core.NewCoreError(core.ErrCodeDBScan, "error updating library", err)
 	}
 	return lib.ToCoreModel(), nil
 }
 
-func (l *LibraryAppDB) CreateLibraryStaff(ctx context.Context, input library.CreateLibraryStaffRequest) (*libraryapp.LibraryStaff, error) {
-	q := "INSERT INTO library_staff (library_id, staff_id) VALUES ($1, $2) RETURNING library_id, staff_id, created_at, updated_at, deleted_at;"
-	args := []any{input.LibraryID, input.StaffID}
-
-	row := l.db.QueryRowContext(ctx, q, args...)
-
-	var libStaff libraryapp.LibraryStaff
-	err := row.Scan(&libStaff.LibraryID, &libStaff.StaffID, &libStaff.CreatedAt, &libStaff.UpdatedAt, &libStaff.DeletedAt)
-	if err != nil {
-		if strings.Contains(err.Error(), "library_staff_library_id_fkey") {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "library not found", err)
-		}
-		if strings.Contains(err.Error(), "library_staff_staff_id_fkey") {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "staff not found", err)
-		}
-		if strings.Contains(err.Error(), "library_staff_pkey") {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBDuplicate, "staff is already assigned", err)
-		}
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating library staff", err)
-	}
-
-	return &libStaff, nil
-}
-
 // FIXME: Duplicate code
-// func (l *LibraryAppDB) CreateLibraryBook(ctx context.Context, input library.CreateLibraryBookRequest) (*libraryapp.LibraryBook, error) {
+// func (l *LibraryAppDB) CreateLibraryBook(ctx context.Context, input library.CreateLibraryBookRequest) (*cm.LibraryBook, error) {
 // 	q := "INSERT INTO library_book (library_id, book_id) VALUES ($1, $2) RETURNING library_id, book_id, created_at, updated_at, deleted_at;"
 // 	args := []any{input.LibraryID, input.BookID}
 
 // 	row := l.db.QueryRowContext(ctx, q, args...)
 
-// 	var libBook libraryapp.LibraryBook
+// 	var libBook cm.LibraryBook
 // 	err := row.Scan(&libBook.LibraryID, &libBook.BookID, &libBook.CreatedAt, &libBook.UpdatedAt, &libBook.DeletedAt)
 // 	if err != nil {
 // 		if strings.Contains(err.Error(), "library_book_library_id_fkey") {
-// 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "library not found", err)
+// 			return nil, core.NewCoreError(core.ErrCodeDBNotFound, "library not found", err)
 // 		}
 // 		if strings.Contains(err.Error(), "library_book_book_id_fkey") {
-// 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "book not found", err)
+// 			return nil, core.NewCoreError(core.ErrCodeDBNotFound, "book not found", err)
 // 		}
 // 		if strings.Contains(err.Error(), "library_book_pkey") {
-// 			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBDuplicate, "book is already registered", err)
+// 			return nil, core.NewCoreError(core.ErrCodeDBDuplicate, "book is already registered", err)
 // 		}
-// 		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating library book", err)
+// 		return nil, core.NewCoreError(core.ErrCodeDBScan, "error creating library book", err)
 // 	}
 
 // 	return &libBook, nil
 // }
 
-func (l *LibraryAppDB) CreateLibraryBookBatch(ctx context.Context, input []libraryapp.LibraryBook, opt library.CreateBatchOpt) (*library.CreateBatchResponse, error) {
+func (l *LibraryAppDB) CreateLibraryBookBatch(ctx context.Context, input []cm.LibraryBook, opt library.CreateBatchOpt) (*library.CreateBatchResponse, error) {
 	var successBookIDs []int
 
 	q := "INSERT INTO library_book (library_id, book_id) VALUES "
@@ -190,16 +165,16 @@ func (l *LibraryAppDB) CreateLibraryBookBatch(ctx context.Context, input []libra
 	if err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			if pgErr.ConstraintName == "library_book_pkey" {
-				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBDuplicate, pgErr.Detail, err)
+				return nil, core.NewCoreError(core.ErrCodeDBDuplicate, pgErr.Detail, err)
 			}
 			if pgErr.ConstraintName == "library_book_book_id_fkey" {
-				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, pgErr.Detail, err)
+				return nil, core.NewCoreError(core.ErrCodeDBNotFound, pgErr.Detail, err)
 			}
 			if pgErr.ConstraintName == "library_book_library_id_fkey" {
-				return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, pgErr.Detail, err)
+				return nil, core.NewCoreError(core.ErrCodeDBNotFound, pgErr.Detail, err)
 			}
 		}
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBExec, "error creating library book batch", err)
+		return nil, core.NewCoreError(core.ErrCodeDBExec, "error creating library book batch", err)
 	}
 
 	defer rows.Close()
@@ -208,7 +183,7 @@ func (l *LibraryAppDB) CreateLibraryBookBatch(ctx context.Context, input []libra
 		var bookID int
 		err := rows.Scan(&bookID)
 		if err != nil {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning book id", err)
+			return nil, core.NewCoreError(core.ErrCodeDBScan, "error scanning book id", err)
 		}
 		successBookIDs = append(successBookIDs, bookID)
 	}

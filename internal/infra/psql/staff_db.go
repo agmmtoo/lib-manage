@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/agmmtoo/lib-manage/internal/core"
 	cm "github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/core/staff"
 	"github.com/agmmtoo/lib-manage/internal/infra/psql/models"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
 func (l *LibraryAppDB) ListStaffs(ctx context.Context, input staff.ListRequest) (*staff.ListResponse, error) {
@@ -44,7 +44,7 @@ func (l *LibraryAppDB) ListStaffs(ctx context.Context, input staff.ListRequest) 
 
 	rows, err := l.db.QueryContext(ctx, q, args...)
 	if err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing staffs", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error listing staffs", err)
 	}
 
 	defer rows.Close()
@@ -58,13 +58,13 @@ func (l *LibraryAppDB) ListStaffs(ctx context.Context, input staff.ListRequest) 
 			&s.UserID, &s.UserUsername,
 		)
 		if err != nil {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error scanning staff", err)
+			return nil, core.NewCoreError(core.ErrCodeDBScan, "error scanning staff", err)
 		}
 		staffs = append(staffs, s.ToCoreModel())
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error listing staffs", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error listing staffs", err)
 	}
 
 	return &staff.ListResponse{
@@ -83,33 +83,36 @@ func (l *LibraryAppDB) GetStaffByID(ctx context.Context, id int) (*cm.Staff, err
 	// TODO: handle pg error (old code)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "staff not found", err)
+			return nil, core.NewCoreError(core.ErrCodeDBNotFound, "staff not found", err)
 		}
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBQuery, "error getting staff", err)
+		return nil, core.NewCoreError(core.ErrCodeDBQuery, "error getting staff", err)
 	}
 
 	return s.ToCoreModel(), nil
 }
 
-func (l *LibraryAppDB) CreateStaff(ctx context.Context, input staff.CreateRequest) (*libraryapp.Staff, error) {
-	q := "INSERT INTO staff (user_id) VALUES ($1) RETURNING id, user_id, created_at, updated_at, deleted_at;"
-	args := []any{input.UserID}
+func (l *LibraryAppDB) CreateStaff(ctx context.Context, input staff.CreateRequest) (*cm.Staff, error) {
+	q := "INSERT INTO staffs (library_id, staff_id) VALUES ($1, $2) RETURNING library_id, user_id, created_at, updated_at, deleted_at;"
+	args := []any{input.LibraryID, input.UserID}
 
 	row := l.db.QueryRowContext(ctx, q, args...)
 
-	var s libraryapp.Staff
-	err := row.Scan(&s.ID, &s.UserID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
+	var stf models.Staff
+	err := row.Scan(&stf.ID, &stf.LibraryID, &stf.UserID, &stf.CreatedAt, &stf.UpdatedAt, &stf.DeletedAt)
 	if err != nil {
-		if strings.Contains(err.Error(), "staff_user_id_fkey") {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBNotFound, "staff user doesn't exist", err)
+		if strings.Contains(err.Error(), "staffs_library_id_fkey") {
+			return nil, core.NewCoreError(core.ErrCodeDBNotFound, "library not found", err)
 		}
-		if strings.Contains(err.Error(), "staff_user_id_key") {
-			return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBDuplicate, "user is already a staff", err)
+		if strings.Contains(err.Error(), "staffs_user_id_fkey") {
+			return nil, core.NewCoreError(core.ErrCodeDBNotFound, "user not found", err)
 		}
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeDBScan, "error creating staff", err)
+		if strings.Contains(err.Error(), "staffs_pkey") {
+			return nil, core.NewCoreError(core.ErrCodeDBDuplicate, "staff is already assigned", err)
+		}
+		return nil, core.NewCoreError(core.ErrCodeDBScan, "error creating staff", err)
 	}
 
-	return &s, nil
+	return stf.ToCoreModel(), nil
 }
 
 func (l *LibraryAppDB) CountStaffs(ctx context.Context) (int, error) {

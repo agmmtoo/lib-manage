@@ -20,7 +20,7 @@ type Subscription struct {
 	Membership *PartialMembership
 }
 
-func (s *Subscription) ToAPIModel() *models.Subscription {
+func (s Subscription) ToAPIModel() models.Subscription {
 	var u *models.PartialUser
 	if s.User != nil {
 		u = &models.PartialUser{
@@ -51,7 +51,7 @@ func (s *Subscription) ToAPIModel() *models.Subscription {
 		}
 	}
 
-	return &models.Subscription{
+	return models.Subscription{
 		ID:           s.ID,
 		UserID:       s.UserID,
 		MembershipID: s.MembershipID,

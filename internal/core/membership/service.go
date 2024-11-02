@@ -31,7 +31,7 @@ func (s *Service) List(ctx context.Context, input http.ListMembershipsRequest) (
 		return nil, err
 	}
 
-	var memberships []*am.Membership
+	var memberships []am.Membership
 	for _, m := range result.Memberships {
 		memberships = append(memberships, m.ToAPIModel())
 	}

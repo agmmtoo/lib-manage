@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/agmmtoo/lib-manage/internal/core"
 	"github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/core/subscription"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
 	am "github.com/agmmtoo/lib-manage/internal/infra/http/models"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
 type Service struct {
@@ -37,7 +37,7 @@ func (s *Service) List(ctx context.Context, input http.ListLoansRequest) (*http.
 	if err != nil {
 		return nil, err
 	}
-	var loans []*am.Loan
+	var loans []am.Loan
 	for _, l := range result.Loans {
 		loans = append(loans, l.ToAPIModel())
 	}
@@ -48,24 +48,13 @@ func (s *Service) List(ctx context.Context, input http.ListLoansRequest) (*http.
 	}, nil
 }
 
-func (s *Service) GetByID(ctx context.Context, id int) (*http.Loan, error) {
+func (s *Service) GetByID(ctx context.Context, id int) (*am.Loan, error) {
 	result, err := s.repo.GetLoanByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return &http.Loan{
-		ID:         result.ID,
-		UserID:     result.UserID,
-		BookID:     result.BookID,
-		LibraryID:  result.LibraryID,
-		StaffID:    result.StaffID,
-		LoanDate:   result.LoanDate,
-		DueDate:    result.DueDate,
-		ReturnDate: result.ReturnDate,
-		CreatedAt:  result.CreatedAt,
-		UpdatedAt:  result.UpdatedAt,
-		DeletedAt:  result.DeletedAt,
-	}, nil
+	loan := result.ToAPIModel()
+	return &loan, nil
 }
 
 func (s *Service) Create(ctx context.Context, input http.CreateLoanRequest) (*am.Loan, error) {
@@ -82,7 +71,7 @@ func (s *Service) Create(ctx context.Context, input http.CreateLoanRequest) (*am
 	}
 	// insanity check
 	if input.LibraryID != book.LibraryID {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeBadRequest, "book not found in library", nil)
+		return nil, core.NewCoreError(core.ErrCodeBadRequest, "book not found in library", nil)
 	}
 
 	// check book is available
@@ -96,7 +85,7 @@ func (s *Service) Create(ctx context.Context, input http.CreateLoanRequest) (*am
 	if len(activeLoans.Loans) > 0 {
 		// DEBUG
 		fmt.Println("Book's active loans: ", time.Until(activeLoans.Loans[0].DueDate))
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeForbidden, "book is not available", nil)
+		return nil, core.NewCoreError(core.ErrCodeForbidden, "book is not available", nil)
 	}
 
 	// get library id from staff
@@ -106,7 +95,7 @@ func (s *Service) Create(ctx context.Context, input http.CreateLoanRequest) (*am
 	}
 	// insanity check
 	if staff.LibraryID != input.LibraryID {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeBadRequest, "staff is not right for library", nil)
+		return nil, core.NewCoreError(core.ErrCodeBadRequest, "staff is not right for library", nil)
 	}
 
 	// check user has active subscription
@@ -122,7 +111,7 @@ func (s *Service) Create(ctx context.Context, input http.CreateLoanRequest) (*am
 		return nil, err
 	}
 	if len(subs.Subscriptions) == 0 {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeForbidden, "user has no active subscription for library", nil)
+		return nil, core.NewCoreError(core.ErrCodeForbidden, "user has no active subscription for library", nil)
 	}
 
 	// NOTE: only the latest subscription is considered
@@ -130,7 +119,7 @@ func (s *Service) Create(ctx context.Context, input http.CreateLoanRequest) (*am
 	sub := subs.Subscriptions[0]
 
 	if sub.ExpiryDate.Before(loanDate) {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeForbidden, "user subscription has expired", nil)
+		return nil, core.NewCoreError(core.ErrCodeForbidden, "user subscription has expired", nil)
 	}
 
 	// get membership
@@ -152,7 +141,7 @@ func (s *Service) Create(ctx context.Context, input http.CreateLoanRequest) (*am
 
 	// check user has reached loan limit
 	if len(ual.Loans) >= mbs.ActiveLoanLimit {
-		return nil, libraryapp.NewCoreError(libraryapp.ErrCodeForbidden, fmt.Sprintf("user has reached loan limit: %d for membership: %d", mbs.ActiveLoanLimit, mbs.ID), nil)
+		return nil, core.NewCoreError(core.ErrCodeForbidden, fmt.Sprintf("user has reached loan limit: %d for membership: %d", mbs.ActiveLoanLimit, mbs.ID), nil)
 	}
 
 	// set due date based on membership
@@ -188,7 +177,7 @@ func (s *Service) Create(ctx context.Context, input http.CreateLoanRequest) (*am
 
 type Storer interface {
 	ListLoans(ctx context.Context, input ListRequest) (*ListResponse, error)
-	GetLoanByID(ctx context.Context, id int) (*libraryapp.Loan, error)
+	GetLoanByID(ctx context.Context, id int) (*models.Loan, error)
 	CreateLoan(ctx context.Context, input CreateRequest) (*models.Loan, error)
 
 	// implemented by book service

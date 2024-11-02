@@ -28,7 +28,7 @@ type LibraryBook struct {
 	BookSubCategoryCategoryName *string
 }
 
-func (lb *LibraryBook) ToCoreModel() *models.LibraryBook {
+func (lb LibraryBook) ToCoreModel() models.LibraryBook {
 
 	// TODO: implement method on source model
 	var sc *models.PartialSubCategory
@@ -44,7 +44,7 @@ func (lb *LibraryBook) ToCoreModel() *models.LibraryBook {
 		}
 	}
 
-	return &models.LibraryBook{
+	return models.LibraryBook{
 		ID:        lb.ID,
 		LibraryID: lb.LibraryID,
 		BookID:    lb.BookID,

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
+	"github.com/agmmtoo/lib-manage/internal/infra/config"
 )
 
 func (h *LibraryAppHandler) ListSubscriptions(w http.ResponseWriter, r *http.Request) error {

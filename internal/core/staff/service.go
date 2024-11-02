@@ -6,7 +6,6 @@ import (
 	"github.com/agmmtoo/lib-manage/internal/core/models"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
 	am "github.com/agmmtoo/lib-manage/internal/infra/http/models"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp"
 )
 
 type Service struct {
@@ -29,7 +28,7 @@ func (s *Service) List(ctx context.Context, input http.ListStaffsRequest) (*http
 	if err != nil {
 		return nil, err
 	}
-	var staffs []*am.Staff
+	var staffs []am.Staff
 	for _, s := range result.Staffs {
 		staffs = append(staffs, s.ToAPIModel())
 	}
@@ -39,34 +38,24 @@ func (s *Service) List(ctx context.Context, input http.ListStaffsRequest) (*http
 	}, nil
 }
 
-func (s *Service) GetByID(ctx context.Context, id int) (*http.Staff, error) {
+func (s *Service) GetByID(ctx context.Context, id int) (*am.Staff, error) {
 	result, err := s.repo.GetStaffByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return &http.Staff{
-		ID:        result.ID,
-		UserID:    result.UserID,
-		CreatedAt: result.CreatedAt,
-		UpdatedAt: result.UpdatedAt,
-		DeletedAt: result.DeletedAt,
-	}, nil
+	staff := result.ToAPIModel()
+	return &staff, nil
 }
 
-func (s *Service) Create(ctx context.Context, input http.CreateStaffRequest) (*http.Staff, error) {
+func (s *Service) Create(ctx context.Context, input http.CreateStaffRequest) (*am.Staff, error) {
 	result, err := s.repo.CreateStaff(ctx, CreateRequest{
 		UserID: input.UserID,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &http.Staff{
-		ID:        result.ID,
-		UserID:    result.UserID,
-		CreatedAt: result.CreatedAt,
-		UpdatedAt: result.UpdatedAt,
-		DeletedAt: result.DeletedAt,
-	}, nil
+	staff := result.ToAPIModel()
+	return &staff, nil
 }
 
 func (s *Service) Count(ctx context.Context) (int, error) {
@@ -76,7 +65,7 @@ func (s *Service) Count(ctx context.Context) (int, error) {
 type Storer interface {
 	ListStaffs(ctx context.Context, input ListRequest) (*ListResponse, error)
 	GetStaffByID(ctx context.Context, id int) (*models.Staff, error)
-	CreateStaff(ctx context.Context, input CreateRequest) (*libraryapp.Staff, error)
+	CreateStaff(ctx context.Context, input CreateRequest) (*models.Staff, error)
 	CountStaffs(ctx context.Context) (int, error)
 }
 
@@ -94,5 +83,6 @@ type ListResponse struct {
 }
 
 type CreateRequest struct {
-	UserID int
+	LibraryID int
+	UserID    int
 }

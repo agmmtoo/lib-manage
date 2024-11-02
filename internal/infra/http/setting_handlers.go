@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
+	"github.com/agmmtoo/lib-manage/internal/infra/config"
 )
 
 func (h *LibraryAppHandler) ListLibrarySettings(w http.ResponseWriter, r *http.Request) error {

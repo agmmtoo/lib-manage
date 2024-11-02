@@ -19,7 +19,7 @@ type Staff struct {
 	Library *PartialLibrary
 }
 
-func (s *Staff) ToAPIModel() *models.Staff {
+func (s Staff) ToAPIModel() models.Staff {
 	var u *models.PartialUser
 	if s.User != nil {
 		u = &models.PartialUser{
@@ -36,7 +36,7 @@ func (s *Staff) ToAPIModel() *models.Staff {
 		}
 	}
 
-	return &models.Staff{
+	return models.Staff{
 		ID:        s.ID,
 		UserID:    s.UserID,
 		LibraryID: s.LibraryID,

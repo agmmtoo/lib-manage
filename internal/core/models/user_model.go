@@ -16,8 +16,8 @@ type User struct {
 	DeletedAt *time.Time
 }
 
-func (u *User) ToAPIModel() *models.User {
-	return &models.User{
+func (u User) ToAPIModel() models.User {
+	return models.User{
 		ID:        u.ID,
 		Username:  u.Username,
 		CreatedAt: u.CreatedAt,

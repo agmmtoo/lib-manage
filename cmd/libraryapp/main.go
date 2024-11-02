@@ -16,9 +16,9 @@ import (
 	staffService "github.com/agmmtoo/lib-manage/internal/core/staff"
 	subscriptionService "github.com/agmmtoo/lib-manage/internal/core/subscription"
 	userService "github.com/agmmtoo/lib-manage/internal/core/user"
+	"github.com/agmmtoo/lib-manage/internal/infra/config"
 	"github.com/agmmtoo/lib-manage/internal/infra/http"
 	"github.com/agmmtoo/lib-manage/internal/infra/psql"
-	"github.com/agmmtoo/lib-manage/pkg/libraryapp/config"
 	"github.com/joho/godotenv"
 	// "github.com/agmmtoo/lib-manage/internal/infra/slog"
 )

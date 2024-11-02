@@ -17,7 +17,7 @@ func (s *Server) registerRoutes(
 	mux.HandleFunc("POST /api/v1/users", MakeHandler(handler.CreateUser))
 	mux.HandleFunc("GET /api/v1/users/{id}", MakeHandler(handler.GetUserByID))
 
-	// mux.HandleFunc("GET /api/v1/books", MakeHandler(handler.ListLibraryBooks))
+	// mux.HandleFunc("GET /api/v1/books", MakeHandler(handler.ListBooks))
 	// mux.HandleFunc("GET /api/v1/books/{id}", MakeHandler(handler.GetLibraryBookByID))
 	mux.HandleFunc("POST /api/v1/books", MakeHandler(handler.CreateBook))
 	mux.HandleFunc("GET /api/v1/lib-books", MakeHandler(handler.ListLibraryBooks))
@@ -46,7 +46,7 @@ func (s *Server) registerRoutes(
 	mux.HandleFunc("GET /api/v1/subscriptions", MakeHandler(handler.ListSubscriptions))
 	mux.HandleFunc("POST /api/v1/subscriptions", MakeHandler(handler.CreateSubscription))
 
-	mux.HandleFunc("GET /api/v1/public", MakeHandler(handler.GetStats))
+	// mux.HandleFunc("GET /api/v1/public", MakeHandler(handler.GetStats))
 
 	return mux
 }
